@@ -136,6 +136,32 @@
     }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; overflow: hidden; }
     .form-row > .form-group { min-width: 0; overflow: hidden; }
+
+    /* ─── DATE INPUTS MOBILE FIX ─── */
+    .form-row input[type="date"] {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 10px 8px;
+      font-size: 14px;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      min-height: 44px;
+      text-overflow: ellipsis;
+    }
+
+    /* iOS-specific: style the date input inner elements */
+    .form-row input[type="date"]::-webkit-date-and-time-value {
+      text-align: left;
+      padding: 0;
+    }
+
+    @media (max-width: 360px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
     .category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 4px; }
     .cat-btn { padding: 10px 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: center; cursor: pointer; font-size: 0.8rem; color: var(--text2); transition: all 0.2s; }
     .cat-btn .cat-icon { font-size: 1.3rem; display: block; margin-bottom: 4px; }
