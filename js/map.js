@@ -11,7 +11,23 @@ let markerClusterGroup = null;
 const OSRM_REQUEST_DELAY = 1500; // ms entre peticiones OSRM
 let osrmQueue = [];              // Cola de peticiones pendientes
 let osrmProcessing = false;      // ¿Está procesando la cola?
-let routeCache = {};             // Cache de rutas: cacheKey -> array de LatLngs
+
+// Cache de rutas: persistente en localStorage
+let routeCache = {};
+try {
+    const savedCache = localStorage.getItem('trip_route_cache');
+    if (savedCache) routeCache = JSON.parse(savedCache);
+} catch (e) {
+    console.warn("🗺️ Error cargando caché de rutas:", e);
+}
+
+function saveRouteCache() {
+    try {
+        localStorage.setItem('trip_route_cache', JSON.stringify(routeCache));
+    } catch (e) {
+        console.warn("🗺️ Error guardando caché de rutas:", e);
+    }
+}
 
 // Generar clave de caché a partir de waypoints
 function getRouteCacheKey(waypoints) {
@@ -28,7 +44,8 @@ function enqueueRoute(waypoints, styles, fallbackLine) {
         let cachedLine = L.polyline(routeCache[cacheKey], {
             color: styles[0].color,
             opacity: styles[0].opacity || 0.9,
-            weight: styles[0].weight || 6
+            weight: styles[0].weight || 6,
+            smoothFactor: 2.0 // Optimización: simplifica el trazo
         }).addTo(itineraryMap);
         routeLines.push(cachedLine);
         // Ocultar fallback si existe
@@ -74,6 +91,7 @@ function processOsrmQueue() {
         // Guardar en caché las coordenadas de la ruta
         if (e.routes && e.routes.length > 0) {
             routeCache[cacheKey] = e.routes[0].coordinates;
+            saveRouteCache(); // Guardar en localStorage
             console.log(`🗺️ Ruta cacheada: ${cacheKey.substring(0, 40)}...`);
         }
         // Ocultar fallback
@@ -186,7 +204,9 @@ function toggleItineraryMap() {
 
 function initMap() {
     // Coordenadas base por defecto (ej. Centro de la pantalla o París)
-    itineraryMap = L.map('itinerary-map').setView([48.8566, 2.3522], 12);
+    itineraryMap = L.map('itinerary-map', {
+        preferCanvas: true // Optimización masiva para móviles: usa Canvas en lugar de SVG
+    }).setView([48.8566, 2.3522], 12);
 
     // Capa base de OpenStreetMap (Gratuita)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -387,7 +407,8 @@ function updateMap() {
                 color: '#a855f7',
                 weight: 2.5,
                 opacity: 0.75,
-                dashArray: '8, 6'
+                dashArray: '8, 6',
+                smoothFactor: 2.5 // Optimización: simplifica el arco
             }).addTo(itineraryMap);
 
             // Emoji de avión en el punto medio del arco
@@ -420,7 +441,8 @@ function updateMap() {
             color: dayColor,
             weight: 5,
             opacity: 0.6,
-            dashArray: '10, 15' // Punteado
+            dashArray: '10, 15', // Punteado
+            smoothFactor: 1.5
         }).addTo(itineraryMap);
         routeLines.push(fallbackLine);
 
