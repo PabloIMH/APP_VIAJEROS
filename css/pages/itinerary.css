@@ -1,0 +1,184 @@
+/* ─── ITINERARY ─── */
+    #panel-itinerary { animation: fadeIn 0.4s ease; }
+
+    .itin-day-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: visible;
+    }
+    .itin-day-header {
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    .itin-day-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .itin-day-header:hover { background: var(--surface3); }
+    .itin-day-header-left { display: flex; align-items: center; gap: 12px; }
+    .itin-day-badge {
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      color: #fff; font-weight: 700; font-size: 0.75rem;
+      padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+    }
+    .itin-day-title { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 600; }
+    .itin-day-subtitle { font-size: 0.78rem; color: var(--text2); margin-top: 2px; }
+    .itin-day-chevron { color: var(--text3); font-size: 0.9rem; transition: transform 0.25s; }
+    .itin-day-block.collapsed .itin-day-chevron { transform: rotate(-90deg); }
+    .itin-day-body { padding: 12px 16px 16px; }
+    .itin-day-block.collapsed .itin-day-body { display: none; }
+
+    .itin-event {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      transition: background 0.15s;
+      overflow: visible;
+    }
+    .itin-event:last-child { border-bottom: none; }
+    .itin-timeline {
+      display: flex; flex-direction: column; align-items: center;
+      width: 44px; flex-shrink: 0; padding-top: 2px;
+    }
+    .itin-time {
+      font-size: 0.72rem; font-weight: 700; color: var(--accent);
+      font-family: 'DM Sans', sans-serif; letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .itin-time-line {
+      width: 1px; flex: 1; min-height: 24px;
+      background: linear-gradient(to bottom, var(--accent2) 0%, transparent 100%);
+      margin-top: 4px; opacity: 0.25;
+    }
+    .itin-event-icon {
+      width: 38px; height: 38px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+      background: var(--surface2);
+    }
+    .itin-event-body { flex: 1; min-width: 0; }
+    .itin-event-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
+    .itin-event-meta { font-size: 0.78rem; color: var(--text2); display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+    .itin-event-note {
+      font-size: 0.82rem; color: var(--text2); line-height: 1.5;
+      background: rgba(91, 140, 247, 0.06);
+      border-left: 2px solid var(--accent2);
+      padding: 6px 10px; border-radius: 0 6px 6px 0;
+      margin-top: 6px;
+    }
+    .itin-event-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .itin-tag {
+      font-size: 0.7rem; font-weight: 600; padding: 2px 8px;
+      border-radius: 20px; border: 1px solid;
+    }
+    .itin-tag-must { background: rgba(232,201,122,0.12); color: var(--accent); border-color: rgba(232,201,122,0.25); }
+    .itin-tag-book { background: rgba(240,120,120,0.12); color: var(--danger); border-color: rgba(240,120,120,0.25); }
+    .itin-tag-tip  { background: rgba(124,239,176,0.12); color: var(--accent3); border-color: rgba(124,239,176,0.25); }
+    .itin-tag-free { background: rgba(91,140,247,0.12); color: var(--accent2); border-color: rgba(91,140,247,0.25); }
+    .itin-tag-done { background: rgba(124,239,176,0.15); color: var(--accent3); border-color: rgba(124,239,176,0.35); }
+
+    .itin-event-actions {
+      display: flex; gap: 6px; flex-shrink: 0; padding-top: 2px; position: relative; z-index: 10;
+    }
+    .itin-action-btn {
+      background: none; border: none; color: var(--text2); cursor: pointer; padding: 4px; border-radius: 4px; font-size: 14px; transition: all 0.2s;
+    }
+    .itin-action-btn:hover { background: var(--surface2); color: var(--text); }
+    .itin-action-btn.del:hover { background: rgba(240,120,120,0.15); color: var(--danger); }
+
+    .itin-event-maps {
+      margin-top: 6px;
+    }
+    
+    .itin-maps-btn {
+      background: linear-gradient(135deg, #4285f4, #34a853);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .itin-maps-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+    }
+
+    .itin-add-event-btn {
+      display: flex; align-items: center; gap: 6px;
+      width: 100%; padding: 8px 10px; margin-top: 6px;
+      background: transparent; border: 1px dashed var(--text3);
+      border-radius: var(--radius-sm); cursor: pointer;
+      color: var(--text3); font-size: 0.82rem; font-weight: 500;
+      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    }
+    .itin-add-event-btn:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(91,140,247,0.06); }
+
+    .itin-load-btn {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      width: 100%; padding: 12px 16px; margin: 8px 0;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); cursor: pointer;
+      color: var(--text2); font-size: 0.88rem; font-weight: 600;
+      transition: all 0.2s; font-family: 'DM Sans', sans-serif;
+    }
+    .itin-load-btn:hover { background: var(--surface3); color: var(--text); border-color: rgba(255,255,255,0.12); }
+    .itin-load-next:hover { border-color: rgba(91,140,247,0.3); color: var(--accent2); }
+    .itin-load-prev:hover { border-color: rgba(232,201,122,0.3); color: var(--accent); }
+    .itin-load-count { font-size: 0.78rem; font-weight: 400; color: var(--text3); }
+
+    .itin-empty { text-align: center; padding: 40px 20px; }
+    .itin-empty-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    .itin-empty p { color: var(--text2); font-size: 0.9rem; }
+    .itin-empty small { color: var(--text3); font-size: 0.8rem; }
+
+    /* Progress bar at top of itinerary */
+    .itin-progress-bar {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px 18px; margin-bottom: 16px;
+    }
+    .itin-progress-track {
+      flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden;
+    }
+    .itin-progress-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      transition: width 0.4s ease;
+    }
+    .itin-progress-label { font-size: 0.78rem; color: var(--text2); white-space: nowrap; }
+
+    /* ─── ITINERARY MODAL ─── */
+    .itin-category-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
+    .itin-tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .itin-tag-toggle {
+      padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text2); font-size: 0.8rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .itin-tag-toggle.active { background: rgba(91,140,247,0.15); color: var(--accent2); border-color: rgba(91,140,247,0.35); }
+    .itin-tag-toggle.must.active { background: rgba(232,201,122,0.15); color: var(--accent); border-color: rgba(232,201,122,0.35); }
+    .itin-tag-toggle.book.active { background: rgba(240,120,120,0.15); color: var(--danger); border-color: rgba(240,120,120,0.3); }
+    .itin-tag-toggle.tip.active  { background: rgba(124,239,176,0.15); color: var(--accent3); border-color: rgba(124,239,176,0.25); }
+
+    @media (max-width: 640px) {
+      .itin-day-header { padding: 12px 14px; }
+      .itin-day-body { padding: 8px 10px 12px; }
+      .itin-timeline { width: 38px; }
+      .itin-event-icon { width: 32px; height: 32px; font-size: 0.9rem; border-radius: 8px; }
+      .itin-event-title { font-size: 0.88rem; }
+      .itin-event-meta { font-size: 0.72rem; }
+    }

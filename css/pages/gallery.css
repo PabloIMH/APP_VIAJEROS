@@ -1,0 +1,159 @@
+/* ─── GALLERY ─── */
+    #panel-gallery { animation: fadeIn 0.4s ease; }
+
+    .gallery-day-group { margin-bottom: 28px; }
+    .gallery-day-label {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 12px;
+    }
+    .gallery-day-label .gdl-badge {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 4px 12px;
+      font-size: 0.78rem; font-weight: 600; color: var(--text2);
+      white-space: nowrap;
+    }
+    .gallery-day-label .gdl-line {
+      flex: 1; height: 1px; background: var(--border);
+    }
+    .gallery-day-label .gdl-count {
+      font-size: 0.75rem; color: var(--text3);
+      white-space: nowrap;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+    .gallery-thumb {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      position: relative;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .gallery-thumb:hover { transform: scale(1.03); box-shadow: 0 8px 24px rgba(0,0,0,0.5); z-index: 1; }
+    .gallery-thumb img {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block; transition: opacity 0.3s;
+    }
+    .gallery-thumb .thumb-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 50%);
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .gallery-thumb:hover .thumb-overlay { opacity: 1; }
+    .gallery-thumb .thumb-caption {
+      position: absolute; bottom: 6px; left: 6px; right: 6px;
+      font-size: 0.7rem; color: #fff; font-weight: 500;
+      opacity: 0; transition: opacity 0.2s;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .gallery-thumb:hover .thumb-caption { opacity: 1; }
+    .gallery-thumb .thumb-del {
+      position: absolute; top: 5px; right: 5px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(0,0,0,0.6); border: none; cursor: pointer;
+      font-size: 0.65rem; color: #fff; display: none;
+      align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .gallery-thumb:hover .thumb-del { display: flex; }
+    .gallery-thumb .thumb-del:hover { background: var(--danger); }
+
+    /* Upload tile */
+    .gallery-upload-tile {
+      aspect-ratio: 1; border-radius: 10px;
+      border: 2px dashed var(--text3);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; transition: all 0.2s; background: transparent;
+      color: var(--text3); font-size: 0.75rem; font-weight: 500; gap: 6px;
+    }
+    .gallery-upload-tile:hover { border-color: var(--accent2); color: var(--accent2); background: rgba(91,140,247,0.06); }
+    .gallery-upload-tile .upload-icon { font-size: 1.4rem; }
+    .gallery-upload-tile.uploading { opacity: 0.6; pointer-events: none; }
+
+    /* Gallery lightbox upgrade */
+    .gallery-lightbox {
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,0.92);
+      display: none; flex-direction: column; align-items: center; justify-content: center;
+      padding: 20px;
+      touch-action: pan-y;
+    }
+    .gallery-lightbox.open { display: flex; }
+    .gallery-lightbox-img {
+      max-width: 100%; max-height: 75vh;
+      border-radius: 12px; object-fit: contain;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+      touch-action: pinch-zoom;
+    }
+    .gallery-lightbox-nav {
+      display: flex; align-items: center; gap: 16px; margin-top: 16px;
+    }
+    .gallery-lb-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .gallery-lb-btn:hover { background: var(--surface3); }
+    .gallery-lb-btn:disabled { opacity: 0.3; pointer-events: none; }
+    .gallery-lb-info {
+      text-align: center;
+    }
+    .gallery-lb-caption { font-size: 0.88rem; color: var(--text); font-weight: 500; max-width: 300px; }
+    .gallery-lb-meta { font-size: 0.75rem; color: var(--text3); margin-top: 4px; }
+    .gallery-lb-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Gallery header stats */
+    .gallery-stats {
+      display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .gallery-stat-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 6px 14px;
+      font-size: 0.82rem; color: var(--text2);
+    }
+    .gallery-stat-pill strong { color: var(--text); }
+
+    .gallery-empty { text-align: center; padding: 50px 20px; }
+    .gallery-empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .gallery-empty p { color: var(--text2); font-size: 0.95rem; }
+    .gallery-empty small { color: var(--text3); font-size: 0.82rem; }
+
+    /* Add photo modal */
+    .gallery-date-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px;
+    }
+    .gallery-date-btn {
+      padding: 8px 6px; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); cursor: pointer; text-align: center;
+      font-size: 0.78rem; color: var(--text2); transition: all 0.2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .gallery-date-btn:hover, .gallery-date-btn.selected {
+      background: rgba(91,140,247,0.15); border-color: rgba(91,140,247,0.35); color: var(--accent2);
+    }
+    .gallery-preview-wrap {
+      width: 100%; aspect-ratio: 4/3; border-radius: var(--radius-sm);
+      overflow: hidden; background: var(--surface2); margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: center; color: var(--text3);
+    }
+    .gallery-preview-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+    @media (max-width: 640px) {
+      .gallery-grid { gap: 4px; }
+      .gallery-thumb { border-radius: 8px; }
+    }

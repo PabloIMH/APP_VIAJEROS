@@ -1,0 +1,93 @@
+/* ─── TOP NAV ─── */
+    .topnav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; background: rgba(10, 12, 16, 0.85); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); }
+    .nav-brand { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 800; color: var(--accent); letter-spacing: -0.5px; }
+    .nav-user { display: flex; align-items: center; gap: 12px; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--accent2), var(--accent)); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; color: #fff; flex-shrink: 0; overflow: hidden; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .avatar-lg { width: 48px; height: 48px; font-size: 1rem; }
+
+    /* ─── AVATAR DROPDOWN ─── */
+    .nav-avatar-btn {
+      position: relative;
+      cursor: pointer;
+      border: none; background: none; padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-avatar-ring {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent2), var(--accent));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.9rem; color: #fff;
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .nav-avatar-ring img { width: 100%; height: 100%; object-fit: cover; }
+    .nav-avatar-btn:hover .nav-avatar-ring,
+    .nav-avatar-btn.open .nav-avatar-ring { border-color: var(--accent); transform: scale(1.05); }
+
+    .user-dropdown {
+      position: absolute; top: calc(100% + 10px); right: 0;
+      width: 220px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+      z-index: 200;
+      display: none;
+      animation: slideDown 0.2s ease;
+      overflow: hidden;
+    }
+    .user-dropdown.open { display: block; }
+    .user-dropdown-header {
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .user-dropdown-name { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .user-dropdown-email { font-size: 0.75rem; color: var(--text3); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .user-dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 16px;
+      font-size: 0.88rem; color: var(--text2);
+      cursor: pointer; transition: background 0.15s, color 0.15s;
+      border: none; background: none; width: 100%;
+      font-family: 'DM Sans', sans-serif; text-align: left;
+    }
+    .user-dropdown-item:hover { background: var(--surface2); color: var(--text); }
+    .user-dropdown-item.danger { color: var(--danger); }
+    .user-dropdown-item.danger:hover { background: rgba(240,120,120,0.1); }
+    .user-dropdown-sep { height: 1px; background: var(--border); margin: 2px 0; }
+    .user-dropdown-item .item-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+
+    /* ─── RESPONSIVE AUTH ─── */
+    @media (max-width: 480px) {
+      #auth-screen {
+        padding: 16px;
+        align-items: flex-start;
+        padding-top: 10vh;
+      }
+      
+      .auth-card {
+        padding: 32px 24px;
+        max-width: 100%;
+      }
+      
+      .auth-logo h1 {
+        font-size: 2rem;
+      }
+      
+      .auth-logo p {
+        font-size: 0.85rem;
+      }
+    }
+    
+    @media (max-height: 700px) {
+      #auth-screen {
+        align-items: flex-start;
+        padding-top: 5vh;
+      }
+      
+      .auth-card {
+        margin-top: 20px;
+      }
+    }

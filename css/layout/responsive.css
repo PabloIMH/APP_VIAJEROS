@@ -1,0 +1,153 @@
+/* ─── RESPONSIVE DESIGN ─── */
+    .trip-hero {
+      border-radius: var(--radius); margin-bottom: 24px;
+      position: relative; overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .trip-hero-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      transition: transform 0.4s ease;
+    }
+    .trip-hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.75) 100%);
+    }
+    .trip-hero-inner {
+      position: relative; z-index: 2;
+      padding: 22px 24px 20px;
+    }
+    /* No cover = dark surface */
+    .trip-hero.no-cover { background: var(--surface); }
+    .trip-hero.no-cover .trip-hero-info h2 { color: var(--text); }
+    .trip-hero.no-cover .trip-hero-info p { color: var(--text2); }
+    /* With cover = white text */
+    .trip-hero.has-cover .trip-hero-info h2 { color: #fff; text-shadow: 0 1px 4px rgba(0,0,0,0.5); }
+    .trip-hero.has-cover .trip-hero-info p { color: rgba(255,255,255,0.8); }
+    .trip-hero.has-cover .btn-ghost {
+      background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);
+      border-color: rgba(255,255,255,0.25); color: #fff;
+    }
+    .trip-hero.has-cover .btn-ghost:hover { background: rgba(255,255,255,0.25); }
+    .trip-hero.has-cover .trip-emoji { background: rgba(255,255,255,0.15) !important; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.2) !important; }
+    .trip-hero.has-cover .trip-date-strip { background: rgba(0,0,0,0.3); border-color: rgba(255,255,255,0.12); backdrop-filter: blur(8px); }
+    .trip-hero.has-cover .trip-date-label { color: rgba(255,255,255,0.5); }
+    .trip-hero.has-cover .trip-date-value { color: #fff; }
+    .trip-hero.has-cover .trip-date-sub { color: rgba(255,255,255,0.6); }
+    .trip-hero.has-cover .trip-date-duration { color: rgba(255,255,255,0.5); }
+    .trip-hero.has-cover .member-chip { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.15); color: #fff; backdrop-filter: blur(6px); }
+    .trip-hero-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+    .trip-hero-info { flex: 1; min-width: 0; }
+    .trip-hero-info h2 { font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 700; line-height: 1.2; }
+    .trip-hero-info p { font-size: 0.88rem; margin-top: 3px; }
+    .trip-hero-actions { display: flex; gap: 8px; flex-shrink: 0; align-items: flex-start; }
+
+    /* Trip hero dropdown menu */
+    .trip-hero-menu {
+      position: relative;
+    }
+    .trip-hero-dots {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text2); font-size: 1.2rem;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .trip-hero-dots:hover { 
+      background: var(--surface2); 
+      border-color: var(--border); 
+      color: var(--text); 
+    }
+    .trip-hero-dropdown {
+      position: absolute; top: calc(100% + 8px); right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      min-width: 160px;
+      z-index: 100;
+      display: none;
+      animation: slideDown 0.15s ease;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    }
+    .trip-hero-dropdown.open { display: block; }
+    .trip-hero-dropdown-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 14px;
+      font-size: 0.88rem; color: var(--text2);
+      cursor: pointer; transition: background 0.15s;
+      border: none; background: none; width: 100%;
+      font-family: 'DM Sans', sans-serif; text-align: left;
+    }
+    .trip-hero-dropdown-item:hover { background: var(--surface2); color: var(--text); }
+
+    /* Deletion Request Banner */
+    .deletion-request-banner {
+      background: rgba(232, 201, 122, 0.15);
+      border: 1px solid rgba(232, 201, 122, 0.3);
+      border-radius: var(--radius-sm);
+      margin: 16px;
+      padding: 16px;
+      animation: slideDown 0.3s ease;
+    }
+    .deletion-request-content {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .deletion-request-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .deletion-request-text {
+      flex: 1;
+    }
+    .deletion-request-title {
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .deletion-request-desc {
+      font-size: 0.85rem;
+      color: var(--text2);
+      margin-bottom: 8px;
+    }
+    .deletion-request-progress {
+      font-size: 0.8rem;
+      color: var(--text3);
+    }
+    .deletion-request-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .trip-date-strip {
+      display: flex; align-items: center; gap: 8px;
+      margin-top: 12px; padding: 10px 14px;
+      background: var(--surface2); border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .trip-date-col { text-align: center; min-width: 56px; }
+    .trip-date-label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.8px; color: var(--text3); font-weight: 600; margin-bottom: 2px; }
+    .trip-date-value { font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1; }
+    .trip-date-sub { font-size: 0.7rem; color: var(--text2); margin-top: 2px; }
+    .trip-date-arrow {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .trip-date-arrow-line {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, var(--accent2), var(--accent));
+      position: relative;
+    }
+    .trip-date-arrow-line::after {
+      content: '▶'; position: absolute; right: -6px; top: -6px;
+      font-size: 0.6rem; color: var(--accent);
+    }
+    .trip-date-duration { font-size: 0.7rem; color: var(--text3); font-weight: 600; }
+
+    .trip-members-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 12px; }

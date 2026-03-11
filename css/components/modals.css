@@ -1,0 +1,148 @@
+/* ─── MODAL ─── */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); z-index: 200; display: flex; align-items: flex-end; justify-content: center; padding: 0; opacity: 0; pointer-events: none; transition: opacity 0.3s; overflow-x: hidden; }
+    .modal-overlay.show { opacity: 1; pointer-events: all; }
+    .modal { overflow-x: hidden; background: var(--surface); border: 1px solid var(--border); border-radius: 24px 24px 0 0; padding: 32px 28px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; transform: translateY(100%); transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.5); }
+    .modal-overlay.show .modal { transform: translateY(0); }
+    .modal-handle { width: 40px; height: 4px; background: var(--surface3); border-radius: 2px; margin: 0 auto 24px; }
+    .modal-title { font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; margin-bottom: 24px; }
+    
+    /* ─── CALCULATOR AND RECEIPT VIEWER STYLES ─── */
+    #receipt-image {
+      transition: transform 0.1s ease;
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      touch-action: none; /* Prevent all default touch actions */
+    }
+    
+    #receipt-image.dragging {
+      transition: none; /* No transition during drag */
+      cursor: grabbing;
+    }
+    
+    #receipt-image:not(.dragging) {
+      cursor: zoom-in;
+    }
+    
+    #receipt-image.zoomed {
+      cursor: move;
+    }
+    
+    #calc-total {
+      transition: all 0.3s ease;
+    }
+    
+    #calc-total.pulse {
+      animation: calcPulse 0.4s ease;
+    }
+    
+    @keyframes calcPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.15); color: var(--accent3); }
+      100% { transform: scale(1); }
+    }
+    
+    .calc-operation-indicator {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin: 0 4px;
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    
+    .calc-operation-indicator.show {
+      opacity: 1;
+      transform: scale(1.2);
+    }
+    
+    .calc-operation-indicator.add {
+      color: var(--accent2);
+    }
+    
+    .calc-operation-indicator.subtract {
+      color: var(--danger);
+    }
+    
+    #calc-input:focus {
+      outline: none;
+      border-color: var(--accent2);
+      box-shadow: 0 0 0 3px rgba(91, 140, 247, 0.1);
+    }
+    
+    #calc-history {
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    
+    #calc-history::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    #calc-history::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    #calc-history::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px;
+    }
+    
+    .calc-button {
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .calc-button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    
+    .calc-button:active {
+      transform: translateY(0);
+    }
+    
+    .calc-button::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.3s, height 0.3s;
+    }
+    
+    .calc-button:active::after {
+      width: 100px;
+      height: 100px;
+    }
+    
+    @media (max-width: 480px) {
+      #receipt-image {
+        height: 150px;
+      }
+      
+      #expense-calculator {
+        padding: 10px;
+      }
+      
+      #calc-input {
+        font-size: 16px; /* Prevent zoom on iOS */
+      }
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; overflow: hidden; }
+    .form-row > .form-group { min-width: 0; overflow: hidden; }
+    .category-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 4px; }
+    .cat-btn { padding: 10px 8px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); text-align: center; cursor: pointer; font-size: 0.8rem; color: var(--text2); transition: all 0.2s; }
+    .cat-btn .cat-icon { font-size: 1.3rem; display: block; margin-bottom: 4px; }
+    .cat-btn.selected { background: rgba(91, 140, 247, 0.15); border-color: rgba(91, 140, 247, 0.4); color: var(--accent2); }
+
+    .members-check { display: flex; flex-direction: column; gap: 8px; }
+    .member-check-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; }
+    .member-check-item.checked { border-color: rgba(91, 140, 247, 0.4); background: rgba(91, 140, 247, 0.08); }
+    .check-circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0; transition: all 0.2s; }
+    .member-check-item.checked .check-circle { background: var(--accent2); border-color: var(--accent2); color: white; }

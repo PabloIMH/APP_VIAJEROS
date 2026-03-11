@@ -1,0 +1,32 @@
+/* ─── LOADING SPINNER ─── */
+    .loading-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 12, 16, 0.8);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+    }
+    
+    .loading-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .loading-spinner {
+      text-align: center;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--surface2);
+      border-top: 3px solid var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }

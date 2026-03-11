@@ -1,0 +1,91 @@
+/* ─── FORM VALIDATION ─── */
+    .form-group {
+      margin-bottom: 16px;
+      position: relative;
+    }
+    
+    .form-group label {
+      display: block; 
+      font-size: 0.8rem; 
+      font-weight: 500; 
+      color: var(--text2); 
+      margin-bottom: 8px; 
+      text-transform: uppercase; 
+      letter-spacing: 0.5px;
+      transition: color 0.2s;
+    }
+    
+    .form-input {
+      width: 100%; 
+      background: var(--surface2); 
+      border: 1px solid var(--border); 
+      border-radius: var(--radius-sm); 
+      padding: 12px 16px; 
+      color: var(--text); 
+      font-family: 'DM Sans', sans-serif; 
+      font-size: 16px; 
+      outline: none; 
+      transition: all 0.2s;
+      position: relative;
+    }
+    
+    .form-input:focus {
+      border-color: rgba(91, 140, 247, 0.4);
+      background: var(--surface3);
+    }
+    
+    .form-input.valid {
+      border-color: var(--accent3);
+      background: rgba(124, 239, 176, 0.05);
+    }
+    
+    .form-input.invalid {
+      border-color: var(--danger);
+      background: rgba(240, 120, 120, 0.05);
+    }
+    
+    .form-input.valid:focus {
+      border-color: var(--accent3);
+      box-shadow: 0 0 0 3px rgba(124, 239, 176, 0.1);
+    }
+    
+    .form-input.invalid:focus {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(240, 120, 120, 0.1);
+    }
+    
+    .validation-message {
+      font-size: 0.75rem;
+      margin-top: 4px;
+      display: none;
+      animation: slideDown 0.2s ease;
+    }
+    
+    .validation-message.error {
+      color: var(--danger);
+      display: block;
+    }
+    
+    .validation-message.success {
+      color: var(--accent3);
+      display: block;
+    }
+    
+    .validation-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    
+    .validation-icon.show {
+      opacity: 1;
+    }
+    
+    .form-group.with-icon .form-input {
+      padding-right: 40px;
+    }

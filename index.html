@@ -1,0 +1,1762 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Viajeros" />
+  <meta name="application-name" content="Viajeros" />
+  <meta name="theme-color" content="#0a0c10" />
+  <link rel="apple-touch-icon" href="img/apple-touch-icon-sinfondo.png" />
+  <link rel="icon" type="image/png" href="img/apple-touch-icon-sinfondo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Viajeros</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,800;1,300&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet" />
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <!-- Leaflet Routing Machine CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+  <!-- Leaflet MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- Map Specific CSS -->
+  <link rel="stylesheet" href="css/map.css" />
+</head>
+
+<body>
+  <!-- Skip navigation for accessibility -->
+  <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+  <!-- SPLASH SCREEN -->
+  <div id="splash-screen">
+    <div class="splash-content">
+      <img src="img/apple-touch-icon-sinfondo.png" alt="Logo Viajeros" class="splash-logo" />
+      <div class="splash-title-wrapper">
+        <h1 class="splash-title">✈ Viajeros</h1>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH SCREEN -->
+  <div id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <h1>✈ Viajeros</h1>
+        <p>Gastos compartidos sin drama</p>
+      </div>
+      <div class="auth-tabs">
+        <div class="auth-tab active" onclick="switchAuthTab('login')">
+          Iniciar sesión
+        </div>
+        <div class="auth-tab" onclick="switchAuthTab('register')">
+          Registrarse
+        </div>
+      </div>
+      <div id="login-form">
+        <div class="form-group">
+          <label for="login-email">Correo electrónico</label>
+          <input type="email" id="login-email" class="form-input" placeholder="tu@correo.com"
+            onkeydown="if (event.key === 'Enter') doLogin();" oninput="validateEmail(this)" />
+          <div class="validation-message" id="login-email-error"></div>
+          <div class="validation-icon" id="login-email-icon"></div>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Contraseña</label>
+          <div style="position: relative">
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••"
+              style="padding-right: 44px" onkeydown="if (event.key === 'Enter') doLogin();"
+              oninput="validatePassword(this)" />
+            <button type="button" class="password-toggle" onclick="togglePwd('login-password', this)"
+              aria-label="Mostrar/ocultar contraseña">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <div class="validation-message" id="login-password-error"></div>
+        </div>
+        <button class="btn btn-primary" onclick="doLogin()" aria-label="Iniciar sesión en tu cuenta"
+          data-tooltip="Accede a tus viajes">
+          Entrar al viaje →
+        </button>
+      </div>
+      <div id="register-form" style="display: none">
+        <div class="form-group">
+          <label for="reg-name">Tu nombre</label>
+          <input type="text" id="reg-name" class="form-input" placeholder="Tu nombre"
+            onkeydown="if (event.key === 'Enter') doRegister();" oninput="validateName(this)" />
+          <div class="validation-message" id="reg-name-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Correo electrónico</label>
+          <input type="email" id="reg-email" class="form-input" placeholder="tu@correo.com"
+            onkeydown="if (event.key === 'Enter') doRegister();" oninput="validateEmail(this)" />
+          <div class="validation-message" id="reg-email-error"></div>
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Contraseña</label>
+          <div style="position: relative">
+            <input type="password" id="reg-password" class="form-input" placeholder="Mínimo 6 caracteres"
+              style="padding-right: 44px" onkeydown="if (event.key === 'Enter') doRegister();"
+              oninput="validatePassword(this)" />
+            <button type="button" class="password-toggle" onclick="togglePwd('reg-password', this)"
+              aria-label="Mostrar/ocultar contraseña">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                <circle cx="12" cy="12" r="3"></circle>
+              </svg>
+            </button>
+          </div>
+          <div class="validation-message" id="reg-password-error"></div>
+        </div>
+        <button class="btn btn-primary" onclick="doRegister()" aria-label="Crear nueva cuenta"
+          data-tooltip="Regístrate para empezar">
+          Crear cuenta →
+        </button>
+      </div>
+      <div style="margin-top: 16px; text-align: center">
+        <p class="text-muted">¿Tienes un código de viaje?</p>
+        <div style="display: flex; gap: 8px; margin-top: 8px">
+          <input type="text" id="join-code" placeholder="Código de 6 caracteres"
+            style="text-transform: uppercase; letter-spacing: 2px" />
+          <button class="btn btn-ghost btn-sm" onclick="joinByCode()" style="white-space: nowrap">
+            Unirse
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app">
+    <!-- TOP NAV -->
+    <nav class="topnav">
+      <div class="nav-brand">✈ Viajeros</div>
+      <div class="nav-user">
+        <!-- 🔔 BELL NOTIFICATION BUTTON -->
+        <div style="position: relative" id="bell-wrapper">
+          <button class="bell-btn" id="bell-btn" onclick="toggleNotifPanel()" title="Notificaciones">
+            🔔
+            <span class="bell-badge" id="bell-badge" style="display: none">0</span>
+          </button>
+          <!-- Notification panel -->
+          <div class="notif-panel" id="notif-panel">
+            <div class="notif-header">
+              <span>🔔 Notificaciones</span>
+              <span class="notif-clear" onclick="clearNotifications()">Marcar todo como leído</span>
+            </div>
+            <div id="notif-list">
+              <div class="notif-empty">Sin notificaciones aún</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- AVATAR DROPDOWN -->
+        <div style="position: relative" id="user-menu-wrapper">
+          <button class="nav-avatar-btn" id="nav-avatar-btn" onclick="toggleUserMenu()">
+            <div class="nav-avatar-ring" id="nav-avatar">?</div>
+          </button>
+          <div class="user-dropdown" id="user-dropdown">
+            <div class="user-dropdown-header">
+              <div class="user-dropdown-name" id="ud-name">—</div>
+              <div class="user-dropdown-email" id="ud-email">—</div>
+            </div>
+            <button class="user-dropdown-item" onclick="
+                  openProfile();
+                  closeUserMenu();
+                ">
+              <span class="item-icon">👤</span> Mi perfil
+            </button>
+            <button class="user-dropdown-item" onclick="
+                  openChangePhotoModal();
+                  closeUserMenu();
+                ">
+              <span class="item-icon">📸</span> Cambiar foto
+            </button>
+            <button class="user-dropdown-item" onclick="
+                  toggleTheme();
+                  closeUserMenu();
+                ">
+              <span class="item-icon">🌙</span> Cambiar tema
+            </button>
+            <div class="user-dropdown-sep"></div>
+            <button class="user-dropdown-item danger" onclick="doLogout()">
+              <span class="item-icon">🚪</span> Cerrar sesión
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="main-content" id="main-content" role="main">
+      <!-- HOME VIEW -->
+      <div id="home-view">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Mis Viajes</h2>
+            <p class="section-subtitle">Tus aventuras y sus gastos</p>
+          </div>
+          <button class="btn btn-primary" style="width: auto" onclick="
+                openModal('create-trip-modal');
+                renderCoverGrid();
+                selectedCoverUrl = null;
+                document.getElementById('cover-preview').innerHTML =
+                  'Sin portada seleccionada';
+              " aria-label="Crear nuevo viaje" data-tooltip="Comienza una nueva aventura">
+            + Nuevo viaje
+          </button>
+        </div>
+        <div id="trips-list">
+          <div class="empty-state-enhanced">
+            <div class="empty-icon-enhanced">🗺️</div>
+            <div class="empty-title">No tienes viajes aún</div>
+            <div class="empty-description">
+              Comienza una nueva aventura o únete a un viaje existente
+            </div>
+            <div class="empty-action" onclick="
+                  openModal('create-trip-modal');
+                  renderCoverGrid();
+                  selectedCoverUrl = null;
+                  document.getElementById('cover-preview').innerHTML =
+                    'Sin portada seleccionada';
+                ">
+              Crear tu primer viaje
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRIP DETAIL VIEW -->
+      <div id="trip-view">
+        <div class="back-btn" onclick="goHome()">← Volver a mis viajes</div>
+        <div class="trip-hero no-cover" id="trip-hero">
+          <div class="trip-hero-bg" id="trip-hero-bg"></div>
+          <div class="trip-hero-overlay" id="trip-hero-overlay" style="display: none"></div>
+
+          <!-- Deletion Request Banner -->
+          <div id="deletion-request-banner" style="display: none" class="deletion-request-banner">
+            <div class="deletion-request-content">
+              <div class="deletion-request-icon">⚠️</div>
+              <div class="deletion-request-text">
+                <div class="deletion-request-title">
+                  Solicitud de eliminación activa
+                </div>
+                <div class="deletion-request-desc" id="deletion-request-desc"></div>
+                <div class="deletion-request-progress" id="deletion-request-progress"></div>
+              </div>
+              <div class="deletion-request-actions">
+                <button class="btn btn-sm" onclick="approveDeletion(currentTripId)"
+                  style="background: var(--accent3); color: var(--bg)">
+                  ✅ Aprobar
+                </button>
+                <button class="btn btn-sm btn-danger" onclick="rejectDeletion(currentTripId)">
+                  ❌ Rechazar
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="trip-hero-inner">
+            <div class="trip-hero-top">
+              <div class="trip-hero-info">
+                <h2 id="tv-name">Viaje</h2>
+                <p id="tv-desc"></p>
+              </div>
+              <div class="trip-hero-actions">
+                <div class="trip-hero-menu">
+                  <button class="trip-hero-dots" onclick="toggleTripHeroMenu()">
+                    ⋮
+                  </button>
+                  <div class="trip-hero-dropdown" id="trip-hero-dropdown">
+                    <button class="trip-hero-dropdown-item" onclick="openEditCoverModal()">
+                      🖼️ Cambiar portada
+                    </button>
+                    <button class="trip-hero-dropdown-item" onclick="openModal('invite-modal')">
+                      👤 Invitar personas
+                    </button>
+                    <button class="trip-hero-dropdown-item" onclick="deleteTrip(currentTripId, currentTrip.name)"
+                      style="color: var(--danger)">
+                      🗑️ Eliminar viaje
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div id="tv-dates"></div>
+            <div class="trip-members-row" id="tv-members"></div>
+          </div>
+        </div>
+
+        <div class="trip-layout">
+          <!-- SIDEBAR (desktop) -->
+          <nav class="trip-sidebar">
+            <div class="trip-sidebar-nav">
+              <button class="trip-sidebar-btn active" id="sb-shared" onclick="switchTab('shared')">
+                <span class="sidebar-icon">💸</span> Gastos
+                <span class="sidebar-active-bar"></span>
+              </button>
+              <button class="trip-sidebar-btn" id="sb-personal" onclick="switchTab('personal')">
+                <span class="sidebar-icon">🔒</span> Personales
+                <span class="sidebar-active-bar"></span>
+              </button>
+              <button class="trip-sidebar-btn" id="sb-balance" onclick="switchTab('balance')">
+                <span class="sidebar-icon">📊</span> Dashboard
+                <span class="sidebar-active-bar"></span>
+              </button>
+              <div class="sidebar-sep"></div>
+              <button class="trip-sidebar-btn" id="sb-notes" onclick="switchTab('notes')">
+                <span class="sidebar-icon">📝</span> Notas
+                <span class="sidebar-active-bar"></span>
+              </button>
+              <button class="trip-sidebar-btn" id="sb-itinerary" onclick="switchTab('itinerary')">
+                <span class="sidebar-icon">🗺️</span> Itinerario
+                <span class="sidebar-active-bar"></span>
+              </button>
+              <button class="trip-sidebar-btn" id="sb-gallery" onclick="switchTab('gallery')">
+                <span class="sidebar-icon">📸</span> Galería
+                <span class="sidebar-active-bar"></span>
+              </button>
+              <div class="sidebar-sep"></div>
+              <button class="trip-sidebar-btn" id="trip-action-btn"
+                onclick="deleteTrip(currentTripId, currentTrip.name)" style="color: var(--danger)">
+                <span class="sidebar-icon">🗑️</span>
+                <span id="trip-action-label">Solicitar eliminar</span>
+                <span class="sidebar-active-bar" style="background: var(--danger)"></span>
+              </button>
+            </div>
+          </nav>
+
+          <!-- MAIN CONTENT -->
+          <div class="trip-content">
+            <!-- EXPENSE FILTERS (Search & Category) -->
+            <div id="expense-filters-bar" class="expense-filters-bar" style="display: none;">
+              <div class="search-input-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="expense-search-input" placeholder="Buscar gasto..."
+                  oninput="onExpenseSearch(this.value)" />
+                <button class="clear-search-btn" id="expense-clear-btn" onclick="clearExpenseSearch()"
+                  style="display: none;">✖</button>
+              </div>
+              <div class="filter-cats-scroll">
+                <button class="filter-cat-pill active" onclick="setExpenseFilterCat('Todas', this)">Todas</button>
+                <button class="filter-cat-pill" onclick="setExpenseFilterCat('Alojamiento', this)">🏠 Alojam.</button>
+                <button class="filter-cat-pill" onclick="setExpenseFilterCat('Vuelo', this)">✈️ Vuelo</button>
+                <button class="filter-cat-pill" onclick="setExpenseFilterCat('Auto', this)">🚗 Auto</button>
+                <button class="filter-cat-pill" onclick="setExpenseFilterCat('Tren', this)">🚂 Tren</button>
+                <button class="filter-cat-pill" onclick="setExpenseFilterCat('Comida', this)">🍽️ Comida</button>
+                <button class="filter-cat-pill" onclick="setExpenseFilterCat('Actividades', this)">🎯 Actividad</button>
+                <button class="filter-cat-pill" onclick="setExpenseFilterCat('Compras', this)">🛍️ Compras</button>
+                <button class="filter-cat-pill" onclick="setExpenseFilterCat('Entretenimiento', this)">🎉
+                  Entret.</button>
+                <button class="filter-cat-pill" onclick="setExpenseFilterCat('Salud', this)">💊 Salud</button>
+                <button class="filter-cat-pill" onclick="setExpenseFilterCat('Otro', this)">📦 Otro</button>
+              </div>
+            </div>
+
+            <!-- SHARED EXPENSES -->
+            <div class="section-panel active" id="panel-shared">
+              <div id="shared-list">
+                <div class="empty-state">
+                  <div class="empty-icon">💸</div>
+                  <p>Sin gastos compartidos aún</p>
+                  <small>Toca + para agregar el primero</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- PERSONAL EXPENSES -->
+            <div class="section-panel" id="panel-personal">
+              <div id="personal-list">
+                <div class="empty-state">
+                  <div class="empty-icon">🔒</div>
+                  <p>Sin gastos personales</p>
+                  <small>Solo tú puedes verlos</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- ═══ NUEVO DASHBOARD ═══ -->
+            <div class="section-panel" id="panel-balance">
+              <!-- KPIs -->
+              <div class="dashboard-kpis" id="dash-kpis">
+                <div class="kpi-card blue">
+                  <div class="kpi-icon">💸</div>
+                  <div class="kpi-label">Total Gastado</div>
+                  <div class="kpi-value" id="kpi-total">$0</div>
+                  <div class="kpi-sub" id="kpi-expenses-count">0 gastos</div>
+                </div>
+                <div class="kpi-card gold">
+                  <div class="kpi-icon">👤</div>
+                  <div class="kpi-label">Mi gasto total</div>
+                  <div class="kpi-value" id="kpi-per-person">$0</div>
+                  <div class="kpi-sub" id="kpi-members-count" style="font-size: 0.68rem; line-height: 1.3"></div>
+                </div>
+                <div class="kpi-card green">
+                  <div class="kpi-icon">🏆</div>
+                  <div class="kpi-label">Mayor gasto</div>
+                  <div class="kpi-value" id="kpi-top-cat">—</div>
+                  <div class="kpi-sub" id="kpi-top-cat-pct"></div>
+                </div>
+              </div>
+
+              <!-- Donut + Member bars -->
+              <div class="dashboard-row">
+                <div class="dash-card">
+                  <div class="dash-card-title">🍩 Por categoría</div>
+                  <div class="donut-wrap" id="donut-wrap">
+                    <svg class="donut-svg" width="100" height="100" viewBox="0 0 100 100" id="donut-svg">
+                      <circle cx="50" cy="50" r="38" fill="none" stroke="#1f2535" stroke-width="18" />
+                      <text x="50" y="47" text-anchor="middle" class="donut-center" id="donut-center-text">
+                        $0
+                      </text>
+                      <text x="50" y="58" text-anchor="middle" class="donut-center-sub" id="donut-center-sub">
+                        total
+                      </text>
+                    </svg>
+                    <div class="donut-legend" id="donut-legend">
+                      <span style="color: var(--text3); font-size: 0.8rem">Sin datos aún</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="dash-card">
+                  <div class="dash-card-title">👤 Gasto por persona</div>
+                  <div class="member-bars" id="member-bars">
+                    <span style="color: var(--text3); font-size: 0.8rem">Sin datos aún</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent activity -->
+              <!-- Resumen por categoria -->
+              <div class="dash-card-full">
+                <div class="dash-card-title" style="margin-bottom: 14px">
+                  Gasto por categoria
+                </div>
+                <div id="cat-breakdown">
+                  <span style="color: var(--text3); font-size: 0.85rem">Sin datos aun</span>
+                </div>
+              </div>
+
+              <div class="dash-card-full">
+                <div class="dash-card-title" style="margin-bottom: 12px">
+                  ⏳ Últimos gastos
+                </div>
+                <div class="activity-list" id="activity-list">
+                  <span style="color: var(--text3); font-size: 0.85rem">Sin actividad aún</span>
+                </div>
+              </div>
+
+              <!-- Balance summary -->
+              <div class="dash-card-full">
+                <div class="dash-card-title" style="margin-bottom: 0">
+                  📊 Resumen de balances
+                </div>
+                <div id="balance-list" class="balance-cards-row"></div>
+              </div>
+
+              <!-- Debts -->
+              <div class="dash-card-full" id="owed-section" style="margin-top: 0">
+                <div class="dash-card-title" style="margin-bottom: 0">
+                  🤝 ¿Quién le debe a quién?
+                </div>
+                <div id="owed-list"></div>
+              </div>
+            </div>
+
+            <!-- NOTES -->
+            <div class="section-panel" id="panel-notes">
+              <div id="notes-list"></div>
+              <div style="margin-top: 12px">
+                <textarea id="note-input" placeholder="Agrega una nota al grupo..."
+                  style="height: 80px; resize: none"></textarea>
+                <button class="btn btn-primary" style="margin-top: 8px; width: auto" onclick="addNote()">
+                  Publicar nota
+                </button>
+              </div>
+            </div>
+
+            <!-- ITINERARY -->
+            <div class="section-panel" id="panel-itinerary">
+              <!-- CONTENEDOR DEL MAPA -->
+              <div class="itinerary-map-container" id="itinerary-map-container" style="display: none;">
+                <div id="itinerary-map"></div>
+
+                <div class="map-btns-overlay">
+                  <button class="map-toggle-btn" id="map-fullscreen-btn" onclick="toggleMapFullscreen()"
+                    title="Pantalla Completa">
+                    ⛶ Ampliar
+                  </button>
+                  <button class="map-toggle-btn" id="map-toggle-btn" onclick="toggleItineraryMap()"
+                    title="Ocultar Mapa">
+                    📍 Ocultar Mapa
+                  </button>
+                </div>
+              </div>
+
+              <div id="itin-progress-wrap" style="display: none">
+                <div class="itin-progress-bar">
+                  <span style="font-size: 1rem">📅</span>
+                  <div class="itin-progress-track">
+                    <div class="itin-progress-fill" id="itin-progress-fill" style="width: 0%"></div>
+                  </div>
+                  <span class="itin-progress-label" id="itin-progress-label">Día 0 de 0</span>
+                </div>
+              </div>
+
+              <!-- BOTÓN PARA MOSTRAR MAPA SI ESTÁ OCULTO -->
+              <div style="text-align: right; margin-bottom: 12px; display: none;" id="show-map-btn-wrap">
+                <button class="btn btn-ghost btn-sm" onclick="toggleItineraryMap()">📍 Ver Mapa</button>
+              </div>
+
+              <div id="itin-days-list">
+                <div class="itin-empty">
+                  <div class="itin-empty-icon">🗺️</div>
+                  <p>El itinerario está vacío</p>
+                  <small>Toca + para agregar actividades día a día</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- GALLERY -->
+            <div class="section-panel" id="panel-gallery">
+              <div class="gallery-stats" id="gallery-stats" style="display: none">
+                <div class="gallery-stat-pill">
+                  📸 <strong id="gallery-photo-count">0</strong>
+                  fotos
+                </div>
+                <div class="gallery-stat-pill">
+                  📅 <strong id="gallery-day-count">0</strong>
+                  días con
+                  recuerdos
+                </div>
+              </div>
+              <div id="gallery-content">
+                <div class="gallery-empty">
+                  <div class="gallery-empty-icon">🖼️</div>
+                  <p>La galería está vacía</p>
+                  <small>Toca + para agregar las primeras fotos del viaje</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- /trip-content -->
+        </div>
+        <!-- /trip-layout -->
+      </div>
+
+      <!-- PROFILE VIEW -->
+      <div id="profile-view">
+        <div class="back-btn" onclick="goHome()">← Volver a mis viajes</div>
+        <div class="profile-hero">
+          <div class="profile-avatar" id="pv-avatar">?</div>
+          <div class="profile-name" id="pv-name"></div>
+          <div class="profile-email" id="pv-email"></div>
+        </div>
+        <div class="profile-section">
+          <div class="profile-section-title">
+            💳 Datos para recibir transferencias
+          </div>
+          <div id="bank-cards-list"></div>
+          <button class="btn btn-ghost" style="width: 100%; margin-top: 4px" onclick="openModal('bank-modal')">
+            + Agregar cuenta bancaria
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB (hidden until a trip is loaded) -->
+    <button class="fab" id="fab-btn" style="display: none" onclick="openAddExpense(window._currentTabType || 'shared')"
+      title="Agregar gasto">
+      +
+    </button>
+  </div>
+
+  <!-- ══════════ MODALS ══════════ -->
+
+  <!-- CREATE TRIP MODAL -->
+  <div class="modal-overlay" id="create-trip-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Nuevo Viaje ✈️</h2>
+      <div class="form-group">
+        <label>Nombre del viaje</label><input type="text" id="trip-name-input" placeholder="Dolomitas 2025" />
+      </div>
+      <div class="form-group">
+        <label>Descripción</label><input type="text" id="trip-desc-input"
+          placeholder="Un viaje épico por los Alpes italianos" />
+      </div>
+      <div class="form-group">
+        <label>Foto de portada</label>
+        <div id="cover-preview" style="
+              width: 100%;
+              aspect-ratio: 16/6;
+              border-radius: 10px;
+              overflow: hidden;
+              margin-bottom: 8px;
+              background: var(--surface2);
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              color: var(--text3);
+              font-size: 0.85rem;
+            ">
+          Sin portada seleccionada
+        </div>
+        <div class="cover-tabs" id="cover-tabs"></div>
+        <div class="cover-grid" id="cover-grid"></div>
+      </div>
+      <div class="form-group">
+        <label>Moneda</label>
+        <select id="trip-currency">
+          <option value="CLP">CLP — Peso Chileno</option>
+          <option value="EUR">EUR — Euro</option>
+          <option value="USD">USD — Dólar</option>
+          <option value="ARS">ARS — Peso Argentino</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Fecha de inicio</label><input type="date" id="trip-start-date" />
+        </div>
+        <div class="form-group">
+          <label>Fecha de regreso</label><input type="date" id="trip-end-date" />
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px">
+        <button class="btn btn-ghost" style="flex: 1" onclick="closeModal('create-trip-modal')">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" style="flex: 1" onclick="createTrip()">
+          Crear viaje
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONFIRM PAYMENT MODAL -->
+  <div class="modal-overlay" id="confirm-pay-modal">
+    <div class="modal" style="max-width: 380px; text-align: center;">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">¿Marcar como pagado?</h2>
+      <p style="color: var(--text2); font-size: 0.95rem; margin-bottom: 24px;">
+        ¿Deseas marcar tu parte como pagada? Esto notificará a quien creó el gasto para que confirme tu pago.
+      </p>
+      <div style="display: flex; gap: 10px;">
+        <button class="btn btn-ghost" style="flex: 1;" onclick="closeModal('confirm-pay-modal')">Cancelar</button>
+        <button class="btn btn-primary" style="flex: 1;" id="confirm-pay-btn">Sí, marcar pagado</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD EXPENSE MODAL -->
+  <div class="modal-overlay" id="add-expense-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title" id="expense-modal-title">Agregar Gasto</h2>
+
+      <div class="form-group" id="expense-type-row" style="display: none">
+        <label>Tipo</label>
+        <div style="display: flex; gap: 8px">
+          <div class="cat-btn selected" id="type-shared" style="flex: 1" onclick="selectExpenseType('shared')">
+            <span class="cat-icon">👤</span>Compartido
+          </div>
+          <div class="cat-btn" id="type-personal" style="flex: 1" onclick="selectExpenseType('personal')">
+            <span class="cat-icon">🔒</span>Personal
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Descripcion
+          <span id="exp-desc-counter"
+            style="float: right; font-size: 0.75rem; color: var(--text3)">0/25</span></label><input type="text"
+          id="exp-desc" placeholder="Cena en Venecia, Camper Dolomitas..." maxlength="25" oninput="
+              document.getElementById('exp-desc-counter').textContent =
+                this.value.length + '/25'
+            " />
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Monto</label>
+          <div style="display: flex; gap: 6px">
+            <select id="exp-currency" style="width: 90px; flex-shrink: 0" onchange="onExpCurrencyChange()">
+              <option value="CLP">CLP</option>
+              <option value="EUR">EUR</option>
+              <option value="USD">USD</option>
+            </select>
+            <input type="number" id="exp-amount" placeholder="0" min="0" style="flex: 1" oninput="onAmountInput()" />
+          </div>
+          <div id="clp-conversion" style="
+                display: none;
+                margin-top: 6px;
+                padding: 8px 10px;
+                background: var(--surface2);
+                border-radius: 8px;
+                font-size: 0.82rem;
+                color: var(--text2);
+              ">
+            <span id="clp-conversion-text"></span>
+            <span id="clp-rate-text" style="
+                  margin-left: 6px;
+                  color: var(--text3);
+                  font-size: 0.75rem;
+                "></span>
+            <span id="clp-loader" style="display: none">cargando tasa...</span>
+          </div>
+        </div>
+        <div class="form-group" id="paidby-group">
+          <label>Pagado por</label><select id="exp-paidby"></select>
+        </div>
+      </div>
+
+      <div class="form-group" id="tip-group" style="display: none">
+        <label style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              flex-wrap: wrap;
+              gap: 6px;
+            ">
+          <span>Propina (opcional)</span>
+          <div style="display: flex; gap: 4px">
+            <div class="cat-btn" id="tip-type-none" style="padding: 4px 8px; font-size: 0.75rem"
+              onclick="selectTipType('none')">
+              Sin propina
+            </div>
+            <div class="cat-btn" id="tip-type-pct" style="padding: 4px 8px; font-size: 0.75rem"
+              onclick="selectTipType('pct')">
+              % Porcentaje
+            </div>
+            <div class="cat-btn" id="tip-type-fixed" style="padding: 4px 8px; font-size: 0.75rem"
+              onclick="selectTipType('fixed')">
+              Monto fijo
+            </div>
+          </div>
+        </label>
+        <div id="tip-input-wrap" style="display: none; margin-top: 8px; display: none">
+          <div style="display: flex; gap: 8px; align-items: center">
+            <input type="number" id="tip-value" placeholder="10" min="0" style="width: 100px"
+              oninput="onAmountInput()" />
+            <span id="tip-unit" style="color: var(--text2); font-size: 0.9rem; font-weight: 600"></span>
+            <span id="tip-calc-text" style="
+                  color: var(--accent);
+                  font-size: 0.82rem;
+                  font-weight: 600;
+                  flex: 1;
+                "></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Categoria</label>
+        <div class="category-grid">
+          <div class="cat-btn selected" onclick="selectCat(this, 'Alojamiento', '🏠')">
+            <span class="cat-icon">🏠</span><small>Alojam.</small>
+          </div>
+          <div class="cat-btn" onclick="selectCat(this, 'Vuelo', '✈️')">
+            <span class="cat-icon">✈️</span><small>Vuelo</small>
+          </div>
+          <div class="cat-btn" onclick="selectCat(this, 'Auto', '🚗')">
+            <span class="cat-icon">🚗</span><small>Auto</small>
+          </div>
+          <div class="cat-btn" onclick="selectCat(this, 'Tren', '🚂')">
+            <span class="cat-icon">🚂</span><small>Tren</small>
+          </div>
+          <div class="cat-btn" onclick="selectCat(this, 'Comida', '🍽️')">
+            <span class="cat-icon">🍽️</span><small>Comida</small>
+          </div>
+          <div class="cat-btn" onclick="selectCat(this, 'Actividades', '🎯')">
+            <span class="cat-icon">🎯</span><small>Activid.</small>
+          </div>
+          <div class="cat-btn" onclick="selectCat(this, 'Compras', '🛍️')">
+            <span class="cat-icon">🛍️</span><small>Compras</small>
+          </div>
+          <div class="cat-btn" onclick="selectCat(this, 'Entretenimiento', '🎉')">
+            <span class="cat-icon">🎉</span><small>Entret.</small>
+          </div>
+          <div class="cat-btn" onclick="selectCat(this, 'Salud', '💊')">
+            <span class="cat-icon">💊</span><small>Salud</small>
+          </div>
+          <div class="cat-btn" onclick="selectCat(this, 'Otro', '📦')">
+            <span class="cat-icon">📦</span><small>Otro</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" id="split-group">
+        <label style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 10px;
+              flex-wrap: wrap;
+              gap: 6px;
+            ">
+          <span>Dividir entre</span>
+          <div style="display: flex; gap: 4px">
+            <div class="cat-btn selected" id="split-mode-equal" style="padding: 4px 8px; font-size: 0.75rem"
+              onclick="setSplitMode('equal')">
+              Igual
+            </div>
+            <div class="cat-btn" id="split-mode-custom" style="padding: 4px 8px; font-size: 0.75rem"
+              onclick="setSplitMode('custom')">
+              Personalizado
+            </div>
+          </div>
+        </label>
+        <div class="members-check" id="split-members"></div>
+        <div id="split-custom-validation" style="
+              display: none;
+              margin-top: 8px;
+              font-size: 0.82rem;
+              padding: 8px 10px;
+              border-radius: 8px;
+              background: var(--surface2);
+            "></div>
+      </div>
+
+      <div class="form-group">
+        <label>Fecha</label><input type="date" id="exp-date" style="
+              width: 100%;
+              max-width: 100%;
+              -webkit-appearance: none;
+              appearance: none;
+              display: block;
+            " />
+      </div>
+
+      <div class="form-group">
+        <label>Comprobante o Boleta (Opcional)</label>
+        <div class="file-upload-wrapper">
+          <input type="file" id="exp-receipt" accept="image/*" class="file-input-hidden"
+            onchange="updateFileName(this)" />
+          <label for="exp-receipt" class="file-upload-btn">
+            <span class="file-icon" id="file-icon-display">📸</span>
+            <span id="file-name-display">Seleccionar foto o boleta...</span>
+          </label>
+        </div>
+        <div id="receipt-upload-status" style="
+              font-size: 0.8rem;
+              color: var(--text3);
+              margin-top: 8px;
+              display: none;
+            ">
+          Subiendo imagen... ⏳
+        </div>
+      </div>
+
+      <div id="exp-preview" style="
+            display: none;
+            margin-bottom: 16px;
+            padding: 14px;
+            background: var(--surface2);
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            color: var(--text2);
+          "></div>
+
+      <div style="display: flex; gap: 10px">
+        <button class="btn btn-ghost" style="flex: 1" onclick="closeModal('add-expense-modal')">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" style="flex: 1" onclick="saveExpense()">
+          Guardar gasto
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT SHARE MODAL (each member edits their own total from comprobante) -->
+  <div class="modal-overlay" id="edit-share-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Editar mi parte ❓</h2>
+
+      <!-- Receipt viewer with calculator -->
+      <div id="receipt-calculator-section" style="margin-bottom: 16px">
+        <!-- Receipt image viewer -->
+        <div id="receipt-viewer" style="
+              background: var(--surface2);
+              border-radius: var(--radius-sm);
+              padding: 12px;
+              margin-bottom: 12px;
+              display: none;
+            ">
+          <div style="
+                color: var(--text3);
+                margin-bottom: 8px;
+                font-size: 0.85rem;
+              ">
+            📸 Recibo del gasto
+          </div>
+          <div style="
+                position: relative;
+                background: #000;
+                border-radius: 8px;
+                overflow: hidden;
+                margin-bottom: 8px;
+              ">
+            <img id="receipt-image" style="
+                  width: 100%;
+                  height: 200px;
+                  object-fit: contain;
+                  cursor: zoom-in;
+                " alt="Recibo" />
+            <!-- Zoom controls -->
+            <div style="
+                  position: absolute;
+                  top: 8px;
+                  right: 8px;
+                  display: flex;
+                  gap: 4px;
+                ">
+              <button onclick="zoomReceipt(-0.2)" style="
+                    background: rgba(0, 0, 0, 0.7);
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    width: 28px;
+                    height: 28px;
+                    font-size: 16px;
+                    cursor: pointer;
+                  ">
+                −
+              </button>
+              <button onclick="zoomReceipt(0.2)" style="
+                    background: rgba(0, 0, 0, 0.7);
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    width: 28px;
+                    height: 28px;
+                    font-size: 16px;
+                    cursor: pointer;
+                  ">
+                +
+              </button>
+              <button onclick="resetZoom()" style="
+                    background: rgba(0, 0, 0, 0.7);
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    width: 28px;
+                    height: 28px;
+                    font-size: 12px;
+                    cursor: pointer;
+                  ">
+                ⟲
+              </button>
+            </div>
+          </div>
+          <div style="
+                text-align: center;
+                color: var(--text3);
+                font-size: 0.75rem;
+              ">
+            Arrastra para mover • Scroll/pinch para zoom • ⟲ para resetear
+          </div>
+        </div>
+
+        <!-- Calculator -->
+        <div id="expense-calculator" style="
+              background: var(--surface2);
+              border-radius: var(--radius-sm);
+              padding: 12px;
+            ">
+          <div style="
+                color: var(--text3);
+                margin-bottom: 8px;
+                font-size: 0.85rem;
+              ">
+            ❓ Calculadora de gastos
+          </div>
+
+          <!-- Calculator display -->
+          <div style="
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                padding: 12px;
+                margin-bottom: 12px;
+              ">
+            <div style="
+                  display: flex;
+                  justify-content: space-between;
+                  align-items: center;
+                ">
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text3)">
+                  Total calculado
+                </div>
+                <div style="display: flex; align-items: center">
+                  <span class="calc-operation-indicator" id="calc-operation"></span>
+                  <div style="
+                        font-family: &quot;Fraunces&quot;, serif;
+                        font-size: 1.4rem;
+                        font-weight: 600;
+                        color: var(--accent);
+                      " id="calc-total">
+                    $0
+                  </div>
+                </div>
+              </div>
+              <button onclick="assignCalcToAmount()" class="calc-button" style="
+                    background: var(--accent3);
+                    color: var(--bg);
+                    border: none;
+                    border-radius: 6px;
+                    padding: 8px 12px;
+                    font-size: 0.8rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                  ">
+                Asignar →
+              </button>
+            </div>
+          </div>
+
+          <!-- Calculator input -->
+          <div style="display: flex; gap: 8px; margin-bottom: 8px">
+            <input type="number" id="calc-input" placeholder="0" min="0" style="
+                  flex: 1;
+                  padding: 8px;
+                  border: 1px solid var(--border);
+                  border-radius: 6px;
+                  background: var(--surface);
+                  color: var(--text);
+                " />
+            <button onclick="addToCalculator()" class="calc-button" style="
+                  background: var(--accent2);
+                  color: white;
+                  border: none;
+                  border-radius: 6px;
+                  padding: 8px 16px;
+                  font-weight: 600;
+                  cursor: pointer;
+                ">
+              +
+            </button>
+            <button onclick="subtractFromCalculator()" class="calc-button" style="
+                  background: var(--danger);
+                  color: white;
+                  border: none;
+                  border-radius: 6px;
+                  padding: 8px 16px;
+                  font-weight: 600;
+                  cursor: pointer;
+                ">
+              −
+            </button>
+            <button onclick="clearCalculator()" class="calc-button" style="
+                  background: var(--surface3);
+                  color: var(--text);
+                  border: none;
+                  border-radius: 6px;
+                  padding: 8px 12px;
+                  font-weight: 600;
+                  cursor: pointer;
+                ">
+              C
+            </button>
+          </div>
+
+          <!-- Percentage calculator -->
+          <div style="display: flex; gap: 8px; margin-bottom: 8px">
+            <input type="number" id="calc-percent-input" placeholder="%" min="0" max="100" step="0.1" style="
+                  width: 80px;
+                  padding: 8px;
+                  border: 1px solid var(--border);
+                  border-radius: 6px;
+                  background: var(--surface);
+                  color: var(--text);
+                " />
+            <button onclick="calculatePercentage()" class="calc-button" style="
+                  background: var(--accent);
+                  color: white;
+                  border: none;
+                  border-radius: 6px;
+                  padding: 8px 12px;
+                  font-weight: 600;
+                  cursor: pointer;
+                ">
+              Calcular %
+            </button>
+          </div>
+
+          <!-- Calculation history -->
+          <div id="calc-history" style="
+                max-height: 80px;
+                overflow-y: auto;
+                font-size: 0.8rem;
+                color: var(--text2);
+              ">
+            <!-- History items will appear here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Expense summary -->
+      <div style="
+            background: var(--surface2);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            margin-bottom: 16px;
+            font-size: 0.85rem;
+          ">
+        <div style="color: var(--text3); margin-bottom: 4px">
+          Gasto total:
+        </div>
+        <div style="
+              font-family: &quot;Fraunces&quot;, serif;
+              font-size: 1.2rem;
+              font-weight: 600;
+              color: var(--accent);
+            " id="share-total-display">
+          $0
+        </div>
+        <div style="color: var(--text3); font-size: 0.75rem; margin-top: 4px" id="share-orig-currency-display"></div>
+      </div>
+
+      <!-- Currency selector (if EUR/USD) -->
+      <div id="share-currency-group" style="display: none; margin-bottom: 16px">
+        <div class="form-group">
+          <label>Mi cantidad está en</label>
+          <select id="share-currency-input" style="width: 100%" onchange="onShareAmountInput()">
+            <option value="CLP">CLP — Peso</option>
+            <option value="EUR">EUR — Euro</option>
+            <option value="USD">USD — Dólar</option>
+          </select>
+        </div>
+        <div id="share-conversion-box" style="
+              display: none;
+              padding: 8px 10px;
+              background: rgba(232, 201, 122, 0.1);
+              border-radius: 8px;
+              font-size: 0.82rem;
+              color: var(--text2);
+              margin-bottom: 12px;
+            ">
+          <div id="share-conversion-text"></div>
+          <div id="share-rate-text" style="color: var(--text3); font-size: 0.75rem; margin-top: 4px"></div>
+        </div>
+      </div>
+
+      <!-- Real-time validation -->
+      <div id="share-validation" style="
+            display: none;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            margin-bottom: 12px;
+          " class="alert"></div>
+
+      <!-- Breakdown of other members -->
+      <div id="share-breakdown" style="margin-bottom: 16px">
+        <div style="
+              font-size: 0.78rem;
+              font-weight: 600;
+              color: var(--text3);
+              text-transform: uppercase;
+              margin-bottom: 8px;
+            ">
+          Desglose de participantes:
+        </div>
+        <div id="share-breakdown-list" style="display: flex; flex-direction: column; gap: 8px"></div>
+      </div>
+
+      <!-- Payment status button -->
+      <div style="margin-bottom: 12px">
+        <button type="button" id="share-paid-btn" class="btn btn-ghost" style="
+              width: 100%;
+              border: 2px solid var(--border);
+              padding: 12px;
+              font-weight: 600;
+              border-radius: var(--radius-sm);
+            " onclick="toggleSharePaidBtn()">
+          <span style="font-size: 1.2rem; margin-right: 8px">○</span>
+          Pendiente de pago
+        </button>
+      </div>
+      <div style="display: flex; gap: 10px">
+        <button class="btn btn-ghost" style="flex: 1" onclick="closeModal('edit-share-modal')">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" style="flex: 1" onclick="saveShareEdit()">
+          Guardar mi parte
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- INVITE MODAL -->
+  <div class="modal-overlay" id="invite-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Invitar al viaje 👥</h2>
+      <p class="text-muted" style="margin-bottom: 16px">
+        Comparte este código con tus compañeros de viaje.
+      </p>
+      <div class="invite-box">
+        <div>
+          <div style="
+                font-size: 0.78rem;
+                color: var(--text3);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                margin-bottom: 6px;
+              ">
+            Código del viaje
+          </div>
+          <div class="invite-code" id="modal-invite-code">------</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="copyCode()">
+          Copiar
+        </button>
+      </div>
+      <p class="text-muted" style="margin-top: 16px; font-size: 0.82rem">
+        Los miembros actuales:
+      </p>
+      <div id="modal-members-list" style="margin-top: 8px"></div>
+      <button class="btn btn-ghost" style="margin-top: 20px; width: 100%" onclick="closeModal('invite-modal')">
+        Cerrar
+      </button>
+    </div>
+  </div>
+
+  <!-- BANK MODAL -->
+  <div class="modal-overlay" id="bank-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">💳 Cuenta Bancaria</h2>
+      <div class="form-group">
+        <label>Banco</label>
+        <select id="bank-name">
+          <option value="">Selecciona banco</option>
+          <option>Banco de Chile</option>
+          <option>BancoEstado</option>
+          <option>Santander</option>
+          <option>BCI</option>
+          <option>Scotiabank</option>
+          <option>Itaú</option>
+          <option>Falabella</option>
+          <option>Ripley</option>
+          <option>BICE</option>
+          <option>Security</option>
+          <option>Mercado Pago</option>
+          <option>Tenpo</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipo de cuenta</label>
+          <select id="bank-type">
+            <option>Cuenta RUT</option>
+            <option>Cuenta Corriente</option>
+            <option>Cuenta Vista</option>
+            <option>Cuenta de Ahorro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Número de cuenta</label><input type="text" id="bank-number" placeholder="12345678" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>RUT titular</label><input type="text" id="bank-rut" placeholder="12.345.678-9" />
+        </div>
+        <div class="form-group">
+          <label>Nombre titular</label><input type="text" id="bank-holder" placeholder="Pablo Muñoz" />
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 8px">
+        <button class="btn btn-ghost" style="flex: 1" onclick="closeModal('bank-modal')">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" style="flex: 1" onclick="saveBankAccount()">
+          Guardar cuenta
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ITINERARY ADD EVENT MODAL -->
+  <div class="modal-overlay" id="add-itin-event-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title" id="itin-modal-title">Agregar actividad 📅</h2>
+
+      <div class="form-group">
+        <label>Horario</label>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <input type="time" id="itin-time-start" value="09:00" style="
+                flex: 1;
+                min-width: 0;
+                padding: 10px 8px;
+                text-align: center;
+              " />
+          <span style="color: var(--text3); flex-shrink: 0; font-size: 0.9rem">→</span>
+          <input type="time" id="itin-time-end" style="
+                flex: 1;
+                min-width: 0;
+                padding: 10px 8px;
+                text-align: center;
+              " />
+        </div>
+        <small style="
+              color: var(--text3);
+              font-size: 0.75rem;
+              margin-top: 4px;
+              display: block;
+            ">Inicio → Fin (opcional)</small>
+      </div>
+
+      <div class="form-group" id="itin-date-row" style="display: none">
+        <label>Día del viaje</label>
+        <select id="itin-day-select"></select>
+      </div>
+
+      <div class="form-group">
+        <label>Nombre de la actividad</label>
+        <input type="text" id="itin-title" placeholder="Visita al Coliseo, Trekking Torres del Paine..." />
+      </div>
+
+      <div class="form-group">
+        <label>Tipo de actividad</label>
+        <div class="itin-category-grid" id="itin-cat-grid">
+          <div class="cat-btn selected" onclick="selectItinCat(this, 'Visita', '🏛️')">
+            <span class="cat-icon">🏛️</span><small>Visita</small>
+          </div>
+          <div class="cat-btn" onclick="selectItinCat(this, 'Comida', '🍽️')">
+            <span class="cat-icon">🍽️</span><small>Comida</small>
+          </div>
+          <div class="cat-btn" onclick="selectItinCat(this, 'Trekking', '🏔️')">
+            <span class="cat-icon">🏔️</span><small>Trekking</small>
+          </div>
+          <div class="cat-btn" onclick="selectItinCat(this, 'Transporte', '🚌')">
+            <span class="cat-icon">🚌</span><small>Transp.</small>
+          </div>
+          <div class="cat-btn" onclick="selectItinCat(this, 'Alojamiento', '🛏️')">
+            <span class="cat-icon">🛏️</span><small>Dormir</small>
+          </div>
+          <div class="cat-btn" onclick="selectItinCat(this, 'Playa', '🏖️')">
+            <span class="cat-icon">🏖️</span><small>Playa</small>
+          </div>
+          <div class="cat-btn" onclick="selectItinCat(this, 'Vuelo', '✈️')">
+            <span class="cat-icon">✈️</span><small>Vuelo</small>
+          </div>
+          <div class="cat-btn" onclick="selectItinCat(this, 'Compras', '🛍️')">
+            <span class="cat-icon">🛍️</span><small>Compras</small>
+          </div>
+          <div class="cat-btn" onclick="selectItinCat(this, 'Fiesta', '🎉')">
+            <span class="cat-icon">🎉</span><small>Fiesta</small>
+          </div>
+          <div class="cat-btn" onclick="selectItinCat(this, 'Otro', '📌')">
+            <span class="cat-icon">📌</span><small>Otro</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="position: relative;">
+        <label>Lugar / Dirección (búsqueda automática)</label>
+        <input type="text" id="itin-location" placeholder="Escribe para buscar (ej. Coliseo Romano)"
+          autocomplete="off" />
+        <div id="itin-location-dropdown" class="location-dropdown" style="display: none;"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Google Maps (opcional)</label>
+        <input type="text" id="itin-maps-url" placeholder="https://maps.google.com/?q=..." />
+        <small style="
+              color: var(--text3);
+              font-size: 0.75rem;
+              margin-top: 4px;
+              display: block;
+            ">
+          💡 Pega la URL de Google Maps o busca un lugar para obtener
+          coordenadas
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>Nota / Datos relevantes (opcional)</label>
+        <textarea id="itin-note"
+          placeholder="Comprar entradas con anticipación, llevar agua, código de reserva: ABC123..."
+          style="height: 80px; resize: none"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Etiquetas</label>
+        <div class="itin-tag-row">
+          <div class="itin-tag-toggle must" id="itag-must" onclick="toggleItinTag('must')">
+            ⭐ Imperdible
+          </div>
+          <div class="itin-tag-toggle book" id="itag-book" onclick="toggleItinTag('book')">
+            📋 Reservar antes
+          </div>
+          <div class="itin-tag-toggle tip" id="itag-tip" onclick="toggleItinTag('tip')">
+            💡 Dato útil
+          </div>
+          <div class="itin-tag-toggle" id="itag-free" onclick="toggleItinTag('free')" style="--tag-clr: var(--accent2)">
+            🆓 Gratis
+          </div>
+          <div class="itin-tag-toggle" id="itag-done" onclick="toggleItinTag('done')" style="--tag-clr: var(--accent3)">
+            ✅ Reservado
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Link de reserva (opcional)</label>
+        <input type="url" id="itin-booking-url" placeholder="https://airbnb.com/rooms/... · booking.com/..." />
+        <small style="
+              color: var(--text3);
+              font-size: 0.75rem;
+              margin-top: 4px;
+              display: block;
+            ">💡 Link al alojamiento, vuelo, actividad...</small>
+      </div>
+
+      <div class="form-group">
+        <label>Comprobante de reserva (opcional)</label>
+        <div class="file-upload-wrapper">
+          <input type="file" id="itin-receipt" accept="image/*" class="file-input-hidden"
+            onchange="updateItinFileName(this)" />
+          <label for="itin-receipt" class="file-upload-btn" id="itin-receipt-label">
+            <span class="file-icon">📸</span>
+            <span id="itin-file-name-display">Seleccionar foto o comprobante...</span>
+          </label>
+        </div>
+        <div id="itin-receipt-preview-link" style="
+              display: none;
+              margin-top: 6px;
+              font-size: 0.8rem;
+              color: var(--text3);
+              display: none;
+              align-items: center;
+              gap: 10px;
+            ">
+          Foto actual:
+          <span id="itin-receipt-view-link" style="
+                color: var(--accent2);
+                text-decoration: underline;
+                cursor: pointer;
+              ">ver foto</span>
+          <span onclick="deleteItinReceipt()" style="color: var(--danger); cursor: pointer; font-size: 0.8rem">✕
+            Borrar</span>
+        </div>
+        <div id="itin-receipt-upload-status" style="
+              font-size: 0.8rem;
+              color: var(--text3);
+              margin-top: 8px;
+              display: none;
+            ">
+          Subiendo imagen... ⏳
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 4px">
+        <button class="btn btn-ghost" style="flex: 1" onclick="closeModal('add-itin-event-modal')">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" style="flex: 1" onclick="saveItinEvent()">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV (mobile) -->
+  <div class="bottom-nav-wrap" id="bottom-nav-wrap">
+    <nav class="bottom-nav" id="bottom-nav" style="display: none">
+      <div class="bottom-nav-inner" id="bottom-nav-inner">
+        <button class="bnav-btn active" id="bnav-shared" onclick="switchTabMobile('shared')">
+          <span class="bnav-icon">💸</span>Compartido
+        </button>
+        <button class="bnav-btn" id="bnav-personal" onclick="switchTabMobile('personal')">
+          <span class="bnav-icon">🔒</span>Personal
+        </button>
+        <button class="bnav-btn" id="bnav-balance" onclick="switchTabMobile('balance')">
+          <span class="bnav-icon">📊</span>Dashboard
+        </button>
+        <button class="bnav-btn" id="bnav-notes" onclick="switchTabMobile('notes')">
+          <span class="bnav-icon">📝</span>Notas
+        </button>
+        <button class="bnav-btn" id="bnav-itinerary" onclick="switchTabMobile('itinerary')">
+          <span class="bnav-icon">🗺️</span>Itinerario
+        </button>
+        <button class="bnav-btn" id="bnav-gallery" onclick="switchTabMobile('gallery')">
+          <span class="bnav-icon">📸</span>Galería
+        </button>
+      </div>
+    </nav>
+  </div>
+  <!-- Mobile bottom nav scroll hint -->
+  <div class="bnav-more-hint" id="bnav-more-hint">
+    <div class="bnav-more-hint-inner">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  <!-- CUSTOM CONFIRM DIALOG -->
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+      <div class="confirm-icon" id="confirm-icon">⚠️</div>
+      <div class="confirm-title" id="confirm-title">¿Estás seguro?</div>
+      <div class="confirm-msg" id="confirm-msg"></div>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" onclick="confirmResolve(false)">
+          Cancelar
+        </button>
+        <button class="btn btn-danger" id="confirm-ok-btn" onclick="confirmResolve(true)">
+          Eliminar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox-overlay" id="lightbox" onclick="closeLightbox()">
+    <div class="lightbox-close">✕</div>
+    <img id="lightbox-img" src="" alt="Comprobante" />
+  </div>
+
+  <!-- PAY INFO MODAL -->
+  <div class="modal-overlay" id="pay-info-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title" id="pay-modal-title">
+        💳 Datos para transferir
+      </h2>
+      <div id="pay-modal-content">
+        <p style="color: var(--text2)">Cargando...</p>
+      </div>
+      <button class="btn btn-ghost" style="width: 100%; margin-top: 20px" onclick="closeModal('pay-info-modal')">
+        Cerrar
+      </button>
+    </div>
+  </div>
+
+  <!-- EDIT COVER MODAL -->
+  <div class="modal-overlay" id="edit-cover-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Foto de portada 🖼️</h2>
+      <div id="edit-cover-preview" style="
+            width: 100%;
+            aspect-ratio: 16/6;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 10px;
+            background: var(--surface2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text3);
+            font-size: 0.85rem;
+          ">
+        Sin portada
+      </div>
+      <div class="cover-tabs" id="edit-cover-tabs"></div>
+      <div class="cover-grid" id="edit-cover-grid"></div>
+      <div style="display: flex; gap: 10px; margin-top: 14px">
+        <button class="btn btn-ghost" style="flex: 1" onclick="closeModal('edit-cover-modal')">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" style="flex: 1" onclick="saveEditCover()">
+          Guardar portada
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GALLERY LIGHTBOX -->
+  <div class="gallery-lightbox" id="gallery-lightbox">
+    <button class="gallery-lb-close" onclick="closeGalleryLightbox()">
+      ✕
+    </button>
+    <img class="gallery-lightbox-img" id="gallery-lb-img" src="" alt="" />
+    <div class="gallery-lightbox-nav">
+      <button class="gallery-lb-btn" id="gallery-lb-prev" onclick="galleryLbNav(-1)">
+        ←
+      </button>
+      <div class="gallery-lb-info">
+        <div class="gallery-lb-caption" id="gallery-lb-caption"></div>
+        <div class="gallery-lb-meta" id="gallery-lb-meta"></div>
+      </div>
+      <button class="gallery-lb-btn" id="gallery-lb-next" onclick="galleryLbNav(1)">
+        →
+      </button>
+    </div>
+  </div>
+
+  <!-- ADD PHOTO MODAL -->
+  <div class="modal-overlay" id="add-photo-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Agregar foto 📸</h2>
+
+      <div class="form-group">
+        <label>Foto</label>
+        <div id="gallery-preview-wrap" class="gallery-preview-wrap">
+          <span style="font-size: 2rem">🖼️</span>
+        </div>
+        <input type="file" id="gallery-photo-input" accept="image/*" style="display: none"
+          onchange="onGalleryPhotoSelected(this)" />
+        <label for="gallery-photo-input" class="file-upload-btn" id="gallery-photo-label">
+          <span class="file-icon">📸</span>
+          <span id="gallery-photo-filename">Seleccionar foto...</span>
+        </label>
+      </div>
+
+      <div class="form-group">
+        <label>Pie de foto (opcional)</label>
+        <input type="text" id="gallery-caption" placeholder="Atardecer increíble, La mejor cena del viaje..." />
+      </div>
+
+      <div class="form-group" id="gallery-day-group">
+        <label>Día del viaje</label>
+        <div class="gallery-date-grid" id="gallery-date-grid"></div>
+      </div>
+
+      <div style="display: flex; gap: 10px; margin-top: 8px">
+        <button class="btn btn-ghost" style="flex: 1" onclick="closeModal('add-photo-modal')">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" style="flex: 1" id="gallery-save-btn" onclick="saveGalleryPhoto()">
+          Subir foto
+        </button>
+      </div>
+      <div id="gallery-upload-status" style="
+            display: none;
+            text-align: center;
+            padding: 10px;
+            font-size: 0.85rem;
+            color: var(--text2);
+          ">
+        Subiendo foto... ⏳
+        <div style="
+              width: 100%;
+              height: 4px;
+              background: var(--surface2);
+              border-radius: 2px;
+              margin-top: 8px;
+              overflow: hidden;
+            ">
+          <div id="gallery-upload-bar" style="
+                height: 100%;
+                width: 0%;
+                background: linear-gradient(
+                  90deg,
+                  var(--accent2),
+                  var(--accent)
+                );
+                border-radius: 2px;
+                transition: width 0.3s;
+              "></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE AVATAR MODAL -->
+  <div class="modal-overlay" id="change-photo-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Cambiar foto de perfil 📸</h2>
+      <div style="display: flex; justify-content: center; margin-bottom: 20px">
+        <div style="
+              width: 80px;
+              height: 80px;
+              border-radius: 50%;
+              background: linear-gradient(
+                135deg,
+                var(--accent2),
+                var(--accent)
+              );
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 2rem;
+              font-weight: 700;
+              color: #fff;
+              overflow: hidden;
+            " id="cp-preview-avatar"></div>
+      </div>
+      <div class="form-group">
+        <input type="file" id="cp-photo-input" accept="image/*" style="display: none"
+          onchange="onAvatarPhotoSelected(this)" />
+        <label for="cp-photo-input" class="file-upload-btn" id="cp-photo-label">
+          <span class="file-icon">🖼️</span>
+          <span id="cp-photo-filename">Seleccionar foto...</span>
+        </label>
+      </div>
+      <div id="cp-upload-status" style="
+            display: none;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.85rem;
+            color: var(--text2);
+          ">
+        Subiendo... ⏳
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 8px">
+        <button class="btn btn-ghost" style="flex: 1" onclick="closeModal('change-photo-modal')">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" style="flex: 1" id="cp-save-btn" onclick="saveAvatarPhoto()">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast" role="alert" aria-live="polite"></div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loading-overlay" style="
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(10, 12, 16, 0.8);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+    <div class="loading-spinner">
+      <div class="spinner"></div>
+      <p style="margin-top: 16px; color: var(--text2)">Cargando...</p>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Leaflet Routing Machine JS -->
+  <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.min.js"></script>
+  <!-- Leaflet MarkerCluster JS -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <!-- Sortable JS -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+  <!-- FIREBASE SDK -->
+  <script type="module" src="js/main.js"></script>
+  <!-- MAP LOGIC -->
+  <script src="js/map.js"></script>
+</body>
+
+</html>
