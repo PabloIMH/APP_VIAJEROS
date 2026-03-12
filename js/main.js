@@ -67,6 +67,7 @@ let activeItinTags = new Set();
 let editingItinEventId = null;
 let editingItinDay = null;
 let itinVisibleDays = 5;
+window._itinInitiallyCollapsed = false;
 
 // Gallery state
 let gallerySelectedDay = null;
@@ -1156,6 +1157,12 @@ function switchTab(tab) {
     fab.style.display = "flex";
     fab.title = "Agregar gasto";
     fab.onclick = () => openAddExpense(window._currentTabType || "shared");
+  }
+
+  // Ocultar botón "Volver arriba" al cambiar de pestaña si no es itinerario
+  if (tab !== "itinerary") {
+    const scrollTopBtn = document.getElementById("scroll-top-btn");
+    if (scrollTopBtn) scrollTopBtn.classList.remove("visible");
   }
 }
 
@@ -3726,7 +3733,9 @@ function renderItinerary(resetPagination) {
         .map((ev) => renderItinEventCard(ev))
         .join("");
 
-      return `<div class="itin-day-block" id="itin-day-${dateStr}">
+      const isCollapsed = window._itinInitiallyCollapsed;
+
+      return `<div class="itin-day-block ${isCollapsed ? 'collapsed' : ''}" id="itin-day-${dateStr}">
           <div class="itin-day-header" onclick="toggleItinDay('${dateStr}')">
             <div class="itin-day-header-left">
               <span class="itin-day-badge" style="${isToday ? "background:linear-gradient(135deg,var(--accent3),var(--accent2))" : isPast ? "background:var(--surface3);color:var(--text3)" : ""}">${dayLabel}</span>
@@ -3989,7 +3998,10 @@ function renderItineraryFromStart() {
       const eventsHtml = dayEvents
         .map((ev) => renderItinEventCard(ev))
         .join("");
-      return `<div class="itin-day-block" id="itin-day-${dateStr}">
+      
+      const isCollapsed = window._itinInitiallyCollapsed;
+
+      return `<div class="itin-day-block ${isCollapsed ? 'collapsed' : ''}" id="itin-day-${dateStr}">
           <div class="itin-day-header" onclick="toggleItinDay('${dateStr}')">
             <div class="itin-day-header-left">
               <span class="itin-day-badge" style="${isToday ? "background:linear-gradient(135deg,var(--accent3),var(--accent2))" : isPast ? "background:var(--surface3);color:var(--text3)" : ""}">${dayLabel}</span>
@@ -5264,6 +5276,7 @@ function scrollToTop() {
  * Expande o contrae todos los bloques de días en el itinerario
  */
 function toggleAllItineraryDays(expand) {
+  window._itinInitiallyCollapsed = !expand;
   const allDayBlocks = document.querySelectorAll(".itin-day-block");
   allDayBlocks.forEach(block => {
     if (expand) {
@@ -5281,7 +5294,10 @@ window.addEventListener("scroll", () => {
   const scrollTopBtn = document.getElementById("scroll-top-btn");
   if (!scrollTopBtn) return;
 
-  if (window.scrollY > 300) {
+  // Solo mostrar si el panel de itinerario está activo y hay scroll
+  const isItinActive = document.getElementById("panel-itinerary")?.classList.contains("active");
+
+  if (isItinActive && window.scrollY > 300) {
     scrollTopBtn.classList.add("visible");
   } else {
     scrollTopBtn.classList.remove("visible");
