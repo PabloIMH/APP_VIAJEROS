@@ -280,43 +280,28 @@ function updateMap() {
             return;
         }
 
-        let dayPoints = [];
-        let firstItemOfThisDay = null; // Para saber si empezó con un Vuelo
+        // === LÓGICA DE RUTAS ===
+        // En lugar de una sola ruta al final, procesamos los tramos uno a uno
+        // para detectar vuelos o trayectos terrestres.
+        let lastSegmentPoint = lastPointOfPrevDay;
 
         day.items.forEach((item, index) => {
-            // Asegurar que forzamos la lectura incluso si Firebase devolvió un texto en lugar de un Float
             let lat = item.lat !== undefined && item.lat !== null ? parseFloat(item.lat) : NaN;
             let lng = item.lng !== undefined && item.lng !== null ? parseFloat(item.lng) : NaN;
 
-            console.log(`🧭 Leaflet evaluando [${item.title}] -> Lat: ${lat}, Lng: ${lng}`);
-
-            // Si falla la conversión a Float, saltamos
             if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
                 console.error(`❌ Coordenadas rotas o vacías para: ${item.title}`);
                 return;
             }
 
-            // === DEDUPLICACIÓN GLOBAL DE PINES ===
-            // Separamos dos conceptos:
-            // 1. ¿Es adyacente al punto anterior? (para no rutear 0 metros)
-            // 2. ¿Ya existe un pin en esta ubicación? (para no dibujar pins duplicados)
-
             let point = L.latLng(lat, lng);
-
-            // 1. Verificar si es ADYACENTE al punto inmediatamente anterior
             let isAdjacentDuplicate = false;
-            if (dayPoints.length > 0) {
-                let prevPoint = dayPoints[dayPoints.length - 1];
-                if (Math.abs(prevPoint.lat - lat) < 0.0001 && Math.abs(prevPoint.lng - lng) < 0.0001) {
-                    isAdjacentDuplicate = true;
-                }
-            } else if (lastPointOfPrevDay) {
-                if (Math.abs(lastPointOfPrevDay.lat - lat) < 0.0001 && Math.abs(lastPointOfPrevDay.lng - lng) < 0.0001) {
-                    isAdjacentDuplicate = true;
-                }
+            if (lastSegmentPoint && Math.abs(lastSegmentPoint.lat - lat) < 0.0001 && Math.abs(lastSegmentPoint.lng - lng) < 0.0001) {
+                isAdjacentDuplicate = true;
             }
 
-            // 2. Buscar si ya existe un MARKER en esta ubicación (en todo el mapa, no solo el anterior)
+            // --- Dibujo de Marcadores ---
+            // (Mantenemos la lógica de no duplicar pines visuales)
             let existingMarker = null;
             for (let m of mapMarkers) {
                 let mPos = m.getLatLng();
@@ -326,147 +311,73 @@ function updateMap() {
                 }
             }
 
-            // Si ya hay un pin aquí, fusionar la actividad en su popup
             if (existingMarker) {
-                console.log(`📍 Fusionando actividad en pin existente para: ${item.title}`);
-                if (item.title && typeof existingMarker.getPopup === 'function') {
-                    let popup = existingMarker.getPopup();
-                    if (popup) {
-                        let currentPopup = popup.getContent();
-                        existingMarker.setPopupContent(currentPopup + `<div class="map-popup-separator"></div>` + buildPopupItem(index, dayIndex, item.title, item.category));
-                    }
+                let popup = existingMarker.getPopup();
+                if (popup) {
+                    let currentPopup = popup.getContent();
+                    existingMarker.setPopupContent(currentPopup + `<div class="map-popup-separator"></div>` + buildPopupItem(index, dayIndex, item.title, item.category));
                 }
-
-                // Si es Alojamiento, cambiar el icono a 🛏️
-                if (item.category === "Alojamiento") {
-                    let sleepColor = getColorForDay(dayIndex);
-                    let sleepIcon = L.divIcon({
-                        className: 'custom-map-marker',
-                        html: `<div style="background-color:${sleepColor};width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:50%">🛏️</div>`,
-                        iconSize: [28, 28],
-                        iconAnchor: [14, 14],
-                        popupAnchor: [0, -14]
-                    });
-                    existingMarker.setIcon(sleepIcon);
+            } else {
+                let pinContent = (item.category === "Alojamiento") ? "🛏️" : `${index + 1}`;
+                let markerColor = getColorForDay(dayIndex);
+                let customIcon = L.divIcon({
+                    className: 'custom-map-marker',
+                    html: `<div style="background-color:${markerColor};width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:50%">${pinContent}</div>`,
+                    iconSize: [28, 28],
+                    iconAnchor: [14, 14],
+                    popupAnchor: [0, -14]
+                });
+                let marker = L.marker(point, { icon: customIcon });
+                if (markerClusterGroup) {
+                    markerClusterGroup.addLayer(marker);
+                } else {
+                    marker.addTo(itineraryMap);
                 }
-
-                if (index === 0) firstItemOfThisDay = item;
-
-                // Si es adyacente, NO lo añadimos a dayPoints (OSRM odia rutear 0 metros)
-                // Si NO es adyacente (ej: volver a Sorrento desde Ravello), SÍ lo necesitamos para la ruta
-                if (!isAdjacentDuplicate) {
-                    dayPoints.push(point);
-                    allWaypoints.push(point);
-                    bounds.extend(point);
-                }
-
-                return;
+                if (item.title) marker.bindPopup(buildPopupItem(index, dayIndex, item.title, item.category));
+                mapMarkers.push(marker);
             }
 
-            // Si NO existe ningún pin aquí, lo añadimos para dibujar la ruta normal
-            dayPoints.push(point);
+            // --- Trazado de Rutas (Tramos) ---
+            if (lastSegmentPoint && !isAdjacentDuplicate) {
+                if (item.category === "Vuelo") {
+                    // Trazar ARCO para vuelos (sea puente o intra-día)
+                    console.log(`✈️ Trazando arco de vuelo para: ${item.title}`);
+                    let arcPoints = generateFlightArc(lastSegmentPoint, point, 30);
+                    let flightLine = L.polyline(arcPoints, {
+                        color: '#a855f7',
+                        weight: 2.5,
+                        opacity: 0.75,
+                        dashArray: window.innerWidth < 768 ? null : '8, 6',
+                        smoothFactor: 2.5
+                    }).addTo(itineraryMap);
+                    
+                    let midPoint = arcPoints[Math.floor(arcPoints.length / 2)];
+                    let planeIcon = L.divIcon({ className: 'flight-plane-icon', html: '✈️', iconSize: [20, 20], iconAnchor: [10, 10] });
+                    let planeMarker = L.marker(midPoint, { icon: planeIcon, interactive: false }).addTo(itineraryMap);
+                    
+                    flightLine.bringToBack();
+                    routeLines.push(flightLine, planeMarker);
+                } else {
+                    // Ruta terrestre OSRM
+                    let dayColor = getColorForDay(dayIndex);
+                    let fallbackLine = L.polyline([lastSegmentPoint, point], {
+                        color: dayColor, weight: 5, opacity: 0.6,
+                        dashArray: window.innerWidth < 768 ? null : '10, 15',
+                        smoothFactor: 3.0
+                    }).addTo(itineraryMap);
+                    routeLines.push(fallbackLine);
+                    enqueueRoute([lastSegmentPoint, point], [{ color: dayColor, opacity: 0.9, weight: 6 }], fallbackLine);
+                }
+            }
+            lastSegmentPoint = point;
             allWaypoints.push(point);
             bounds.extend(point);
-            if (index === 0) firstItemOfThisDay = item;
-
-        console.log(`✅ Dibujando PIN para: ${item.title}`);
-
-        // === ICONO PERSONALIZADO ===
-        // Si es un alojamiento (Dormir), mostrar su icono en vez del numero para diferenciar las noches de hotel de las paradas de carretera
-        let pinContent = `${index + 1}`;
-        if (item.category === "Alojamiento") {
-            pinContent = "🛏️";
-        }
-
-        // Usar un divIcon con número ordenado (o emoji) y color asignado por el día
-        let markerColor = getColorForDay(dayIndex);
-        let customIcon = L.divIcon({
-            className: 'custom-map-marker',
-            html: `<div style="background-color:${markerColor};width:100%;height:100%;display:flex;align-items:center;justify-content:center;border-radius:50%">${pinContent}</div>`,
-            iconSize: [28, 28],
-            iconAnchor: [14, 14],
-            popupAnchor: [0, -14]
         });
 
-        // Marcador estándar y simple 
-        let marker = L.marker([lat, lng], { icon: customIcon });
-        if (markerClusterGroup) {
-            markerClusterGroup.addLayer(marker);
-        } else {
-            marker.addTo(itineraryMap);
-        }
-
-        // Solo bind popup si hay título
-        if (item.title) {
-            marker.bindPopup(buildPopupItem(index, dayIndex, item.title, item.category));
-        }
-
-        mapMarkers.push(marker);
+        lastPointOfPrevDay = lastSegmentPoint;
+        dayIndex++;
     });
 
-    // == LÓGICA DE PUENTE INTER-DÍAS ==
-    // Si venimos de un día anterior y tenemos puntos hoy, conectarlos
-    if (lastPointOfPrevDay && dayPoints.length > 0 && window.L) {
-        let bridgePoints = [lastPointOfPrevDay, dayPoints[0]];
-
-        if (firstItemOfThisDay && firstItemOfThisDay.category === "Vuelo") {
-            // Trazar un ARCO CURVO estilo aerolínea para vuelos
-            let arcPoints = generateFlightArc(bridgePoints[0], bridgePoints[1], 30);
-            let flightLine = L.polyline(arcPoints, {
-                color: '#a855f7',
-                weight: 2.5,
-                opacity: 0.75,
-                dashArray: window.innerWidth < 768 ? null : '8, 6', // Sin punteado en móvil para evitar jitter
-                smoothFactor: 2.5
-            }).addTo(itineraryMap);
-
-            // Emoji de avión en el punto medio del arco
-            let midPoint = arcPoints[Math.floor(arcPoints.length / 2)];
-            let planeIcon = L.divIcon({
-                className: 'flight-plane-icon',
-                html: '✈️',
-                iconSize: [20, 20],
-                iconAnchor: [10, 10]
-            });
-            let planeMarker = L.marker(midPoint, { icon: planeIcon, interactive: false }).addTo(itineraryMap);
-
-            flightLine.bringToBack();
-            routeLines.push(flightLine);
-            routeLines.push(planeMarker);
-        } else if (window.L.Routing) {
-            // Si es un trayecto normal (Auto, Tren, etc), BUSCAR LA RUTA REAL por carretera
-            let bridgeDayColor = getColorForDay(dayIndex);
-            enqueueRoute(bridgePoints, [{ color: bridgeDayColor, opacity: 0.9, weight: 6 }], null);
-        }
-    }
-
-    // LÓGICA DE RUTAS DENTRO DEL DÍA MISMO
-    if (dayPoints.length > 1 && window.L) {
-        let dayColor = getColorForDay(dayIndex);
-
-        // DIBUJAR SIEMPRE LA BASE INCONDICIONAL: Si OSRM falla brutalmente por CORS o timeout sin diparar el evento 'routingerror', 
-        // no nos quedaremos con mapa vacío.
-        let fallbackLine = L.polyline(dayPoints, {
-            color: dayColor,
-            weight: 5,
-            opacity: 0.6,
-            dashArray: window.innerWidth < 768 ? null : '10, 15', // Solido en móvil
-            smoothFactor: 3.0
-        }).addTo(itineraryMap);
-        routeLines.push(fallbackLine);
-
-        if (window.L.Routing) {
-            enqueueRoute(dayPoints, [{ color: dayColor, opacity: 0.9, weight: 6 }], fallbackLine);
-        }
-    }
-
-    // Guardamos el último punto usable de este día como ancla para el próximo
-    if (dayPoints.length > 0) {
-        lastPointOfPrevDay = dayPoints[dayPoints.length - 1];
-    }
-
-    dayIndex++;
-});
 
 /* 
 // Dibujar una Ruta Global Continua que una a TODOS los días del viaje

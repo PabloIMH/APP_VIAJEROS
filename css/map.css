@@ -416,3 +416,20 @@
 .location-dropdown-item:hover small {
   color: rgba(255, 255, 255, 0.8);
 }
+
+/* ========== OPTIMIZACIONES DE RENDIMIENTO MÓVIL ========== */
+@media (max-width: 768px) {
+  .map-day-legend,
+  .leaflet-popup-content-wrapper,
+  .map-fullscreen-btn {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+    background: rgba(15, 23, 42, 0.95) !important;
+  }
+
+  /* Simplificar sombras de marcadores clusters si existen */
+  .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
+    box-shadow: none !important;
+  }
+}
