@@ -168,6 +168,8 @@ window.closeUserMenu = closeUserMenu;
 window.openChangePhotoModal = openChangePhotoModal;
 window.onAvatarPhotoSelected = onAvatarPhotoSelected;
 window.saveAvatarPhoto = saveAvatarPhoto;
+window.scrollToTop = scrollToTop;
+window.toggleAllItineraryDays = toggleAllItineraryDays;
 
 // ─── USER MENU ───
 let userMenuOpen = false;
@@ -3666,6 +3668,7 @@ function renderItinerary(resetPagination) {
   if (!allDays.length) {
     container.innerHTML = `<div class="itin-empty"><div class="itin-empty-icon">📅</div><p>El viaje no tiene fechas definidas</p><small>Edita el viaje para agregar fechas de inicio y fin</small></div>`;
     progressWrap.style.display = "none";
+    document.getElementById("itin-controls").style.display = "none";
     return;
   }
 
@@ -3675,6 +3678,7 @@ function renderItinerary(resetPagination) {
   const totalDays = allDays.length;
   const pct = Math.min(100, Math.round((passedDays / totalDays) * 100));
   progressWrap.style.display = "";
+  document.getElementById("itin-controls").style.display = "flex";
   document.getElementById("itin-progress-fill").style.width = pct + "%";
   document.getElementById("itin-progress-label").textContent =
     `Día ${Math.min(passedDays, totalDays)} de ${totalDays}`;
@@ -3964,6 +3968,7 @@ function renderItineraryFromStart() {
   document.getElementById("itin-progress-fill").style.width = pct + "%";
   document.getElementById("itin-progress-label").textContent =
     `Día ${Math.min(passedDays, totalDays)} de ${totalDays}`;
+  document.getElementById("itin-controls").style.display = "flex";
 
   const visibleDays = allDays.slice(0, itinVisibleDays);
   const hasMore = itinVisibleDays < allDays.length;
@@ -5242,3 +5247,44 @@ function handleError(error, context = "") {
 function smoothScrollTo(element) {
   element.scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+// ─── ITINERARY & SCROLL HELPERS ───
+
+/**
+ * Realiza un scroll suave hacia la parte superior de la aplicación
+ */
+function scrollToTop() {
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+/**
+ * Expande o contrae todos los bloques de días en el itinerario
+ */
+function toggleAllItineraryDays(expand) {
+  const allDayBlocks = document.querySelectorAll(".itin-day-block");
+  allDayBlocks.forEach(block => {
+    if (expand) {
+      block.classList.remove("collapsed");
+    } else {
+      block.classList.add("collapsed");
+    }
+  });
+}
+
+/**
+ * Detector de scroll para mostrar el botón de "Volver arriba"
+ */
+window.addEventListener("scroll", () => {
+  const scrollTopBtn = document.getElementById("scroll-top-btn");
+  if (!scrollTopBtn) return;
+
+  if (window.scrollY > 300) {
+    scrollTopBtn.classList.add("visible");
+  } else {
+    scrollTopBtn.classList.remove("visible");
+  }
+}, { passive: true });
+

@@ -1,0 +1,92 @@
+/* ========== ITINERARY CONTROLS & SCROLL TOP ========== */
+
+/* Contenedor de botones Expandir/Contraer */
+.itin-controls {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+    padding: 0 4px;
+}
+
+.itin-control-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text1);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.itin-control-btn:hover {
+    background: var(--surface3);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.itin-control-btn:active {
+    transform: translateY(0);
+}
+
+.itin-control-svg {
+    width: 16px;
+    height: 16px;
+    opacity: 0.8;
+}
+
+/* Botón Volver Arriba */
+.scroll-top-btn {
+    position: fixed;
+    bottom: 85px; /* Por encima de la bottom nav */
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.scroll-top-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.scroll-top-btn.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.scroll-top-btn:hover {
+    background: var(--accent);
+    transform: scale(1.1);
+}
+
+/* Ajuste para móvil: subirlo un poco más si la bottom nav es más alta */
+@media (max-width: 768px) {
+    .scroll-top-btn {
+        bottom: 95px;
+        width: 40px;
+        height: 40px;
+    }
+}
