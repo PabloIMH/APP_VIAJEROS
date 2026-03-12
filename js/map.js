@@ -23,9 +23,18 @@ try {
 
 function saveRouteCache() {
     try {
+        // Limitar tamaño de caché para evitar QuotaExceededError
+        const keys = Object.keys(routeCache);
+        if (keys.length > 100) {
+            // Eliminar las 20 entradas más antiguas si la caché es muy grande
+            keys.slice(0, 20).forEach(k => delete routeCache[k]);
+        }
         localStorage.setItem('trip_route_cache', JSON.stringify(routeCache));
     } catch (e) {
         console.warn("🗺️ Error guardando caché de rutas:", e);
+        if (e.name === 'QuotaExceededError') {
+            localStorage.removeItem('trip_route_cache'); // Reset si está lleno
+        }
     }
 }
 
@@ -45,7 +54,7 @@ function enqueueRoute(waypoints, styles, fallbackLine) {
             color: styles[0].color,
             opacity: styles[0].opacity || 0.9,
             weight: styles[0].weight || 6,
-            smoothFactor: 2.0 // Optimización: simplifica el trazo
+            smoothFactor: 3.0 // Optimización: simplifica el trazo para SVG
         }).addTo(itineraryMap);
         routeLines.push(cachedLine);
         // Ocultar fallback si existe
@@ -205,7 +214,7 @@ function toggleItineraryMap() {
 function initMap() {
     // Coordenadas base por defecto (ej. Centro de la pantalla o París)
     itineraryMap = L.map('itinerary-map', {
-        preferCanvas: true // Optimización masiva para móviles: usa Canvas en lugar de SVG
+        preferCanvas: false // Revertido: SVG se sincroniza mejor con el gesto de arrastre en móviles
     }).setView([48.8566, 2.3522], 12);
 
     // Capa base de OpenStreetMap (Gratuita)
@@ -407,8 +416,8 @@ function updateMap() {
                 color: '#a855f7',
                 weight: 2.5,
                 opacity: 0.75,
-                dashArray: '8, 6',
-                smoothFactor: 2.5 // Optimización: simplifica el arco
+                dashArray: window.innerWidth < 768 ? null : '8, 6', // Sin punteado en móvil para evitar jitter
+                smoothFactor: 2.5
             }).addTo(itineraryMap);
 
             // Emoji de avión en el punto medio del arco
@@ -441,8 +450,8 @@ function updateMap() {
             color: dayColor,
             weight: 5,
             opacity: 0.6,
-            dashArray: '10, 15', // Punteado
-            smoothFactor: 1.5
+            dashArray: window.innerWidth < 768 ? null : '10, 15', // Solido en móvil
+            smoothFactor: 3.0
         }).addTo(itineraryMap);
         routeLines.push(fallbackLine);
 
