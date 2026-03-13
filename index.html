@@ -517,7 +517,8 @@
               <!-- BOTONES DE CONTROL DE ITINERARIO (Expandir/Contraer) -->
               <div class="itin-controls" id="itin-controls" style="display: none;">
                 <button class="itin-control-btn" onclick="toggleAllItineraryDays(true)">
-                  <svg class="itin-control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="itin-control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="15 3 21 3 21 9"></polyline>
                     <polyline points="9 21 3 21 3 15"></polyline>
                     <line x1="21" y1="3" x2="14" y2="10"></line>
@@ -526,7 +527,8 @@
                   <span>Expandir todo</span>
                 </button>
                 <button class="itin-control-btn" onclick="toggleAllItineraryDays(false)">
-                  <svg class="itin-control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg class="itin-control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="4 14 10 14 10 20"></polyline>
                     <polyline points="20 10 14 10 14 4"></polyline>
                     <line x1="14" y1="10" x2="21" y2="3"></line>
@@ -605,7 +607,8 @@
 
     <!-- Botón Volver Arriba -->
     <button id="scroll-top-btn" class="scroll-top-btn" onclick="scrollToTop()" title="Volver arriba">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+        stroke-linejoin="round">
         <polyline points="18 15 12 9 6 15"></polyline>
       </svg>
     </button>
@@ -1386,6 +1389,9 @@
           </div>
           <div class="cat-btn" onclick="selectItinCat(this, 'Vuelo', '✈️')">
             <span class="cat-icon">✈️</span><small>Vuelo</small>
+          </div>
+          <div class="cat-btn" onclick="selectItinCat(this, 'Tren', '🚂')">
+            <span class="cat-icon">🚂</span><small>Tren</small>
           </div>
           <div class="cat-btn" onclick="selectItinCat(this, 'Compras', '🛍️')">
             <span class="cat-icon">🛍️</span><small>Compras</small>
