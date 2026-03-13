@@ -3899,7 +3899,7 @@ function renderItinEventCard(ev) {
     ? `<div class="itin-event-note">💬 ${ev.note}</div>`
     : "";
 
-  const itinIcons = { Visita: "🏛️", Comida: "🍽️", Alojamiento: "🏠", Vuelo: "✈️", Tren: "🚂", Auto: "🚗", Actividad: "🎯", Otro: "📌" };
+  const itinIcons = { Visita: "🏛️", Comida: "🍽️", Alojamiento: "🏠", Vuelo: "✈️", Tren: "🚂", Teleférico: "🚠", Moto: "🛵", Barco: "🚢", Bici: "🚲", Auto: "🚗", Actividad: "🎯", Otro: "📌" };
   const evIcon = ev.icon || itinIcons[ev.category] || "📌";
 
   return `<div class="itin-event" data-id="${ev.id}">

@@ -140,6 +140,10 @@ function getCategoryEmoji(category) {
         'Compras': '🛍️',
         'Entretenimiento': '🎉',
         'Salud': '💊',
+        'Teleférico': '🚠',
+        'Moto': '🛵',
+        'Barco': '🚢',
+        'Bici': '🚲',
         'Otro': '📦'
     };
     return map[category] || '📍';
