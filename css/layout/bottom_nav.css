@@ -1,60 +1,110 @@
-/* ─── BOTTOM NAV ─── */
-    .bottom-nav { display: none; position: fixed; bottom: 0; left: 0; right: 0; background: rgba(17, 19, 24, 0.96); backdrop-filter: blur(20px); border-top: 1px solid var(--border); z-index: 50; padding: 8px 0 env(safe-area-inset-bottom, 8px); }
-    .bottom-nav-inner { display: flex; justify-content: flex-start; align-items: center; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 0 4px; }
-    .bottom-nav-inner::-webkit-scrollbar { display: none; }
-    .bnav-btn { display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; cursor: pointer; padding: 6px 14px; color: var(--text3); font-family: 'DM Sans', sans-serif; font-size: 0.68rem; font-weight: 500; transition: color 0.2s; -webkit-tap-highlight-color: transparent; flex-shrink: 0; scroll-snap-align: start; min-width: calc(100% / 5); }
-    .bnav-btn .bnav-icon { font-size: 1.3rem; }
-    .bnav-btn.active { color: var(--accent); }
-    .bnav-btn:active { transform: scale(0.92); }
+/* ─── BOTTOM NAV (MAGIC CURVE) ─── */
+.bottom-nav { 
+  display: none; 
+  position: fixed; 
+  bottom: 0; 
+  left: 0; 
+  right: 0; 
+  background: var(--bg); 
+  height: 70px;
+  border-top: 1px solid var(--border); 
+  z-index: 50; 
+  padding: 0 env(safe-area-inset-bottom, 0); 
+}
 
-    /* Bottom nav scroll hint — fade edge */
-    .bottom-nav-wrap {
-      position: relative;
-    }
-    .bottom-nav-wrap::after {
-      content: '';
-      position: absolute;
-      top: 0; bottom: 0; right: 0;
-      width: 52px;
-      background: linear-gradient(to left, rgba(17,19,24,0.98) 10%, transparent);
-      pointer-events: none;
-      z-index: 52;
-      transition: opacity 0.3s;
-      opacity: 0;
-    }
-    .bottom-nav-wrap.has-more::after {
-      opacity: 1;
-    }
-    /* Chevron dot inside the fade */
-    .bnav-more-hint {
-      position: fixed;
-      bottom: calc(18px + env(safe-area-inset-bottom, 0px));
-      right: 6px;
-      z-index: 53;
-      pointer-events: none;
-      transition: opacity 0.3s;
-      opacity: 0;
-    }
-    .bnav-more-hint.visible {
-      opacity: 1;
-    }
-    .bnav-more-hint-inner {
-      display: flex; flex-direction: column; align-items: center; gap: 1px;
-    }
-    .bnav-more-hint-inner span {
-      display: block; width: 4px; height: 4px; border-radius: 50%;
-      background: var(--accent);
-    }
-    .bnav-more-hint-inner span:nth-child(1) { opacity: 0.4; }
-    .bnav-more-hint-inner span:nth-child(2) { opacity: 0.7; }
-    .bnav-more-hint-inner span:nth-child(3) { opacity: 1; }
-    @keyframes hintPulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-    .bnav-more-hint.visible .bnav-more-hint-inner span:nth-child(3) {
-      animation: hintPulse 1.4s ease-in-out infinite;
-    }
+.bottom-nav-inner { 
+  position: relative;
+  display: flex; 
+  justify-content: space-around; 
+  align-items: center; 
+  width: 100%;
+  height: 100%;
+  padding: 0 10px;
+}
+
+.bnav-btn { 
+  position: relative;
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center;
+  background: none; 
+  border: none; 
+  cursor: pointer; 
+  color: var(--text3); 
+  transition: all 0.5s ease;
+  -webkit-tap-highlight-color: transparent; 
+  flex: 1;
+  height: 100%;
+  z-index: 10;
+}
+
+.bnav-btn i { 
+  font-size: 1.5rem; 
+  transition: transform 0.5s ease, color 0.5s ease;
+}
+
+.bnav-label {
+  position: absolute;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: all 0.5s ease;
+  opacity: 0;
+  transform: translateY(20px);
+  color: var(--accent);
+}
+
+.bnav-btn.active i {
+  transform: translateY(-35px); /* Perfectly centered in the indicator */
+  color: var(--bg);
+}
+
+.bnav-btn.active .bnav-label {
+  opacity: 1;
+  transform: translateY(15px);
+}
+
+/* Indicator */
+.navigation-indicator {
+  position: absolute;
+  top: -30px; /* Aligns exactly half (30px of 60px) above the bar */
+  width: 60px;
+  height: 60px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 4px solid var(--bg); /* Slightly thinner border for cleaner look */
+  opacity: 0;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+/* Side curves for the indicator hole - precision aligned to prevent bleeding in light mode */
+.navigation-indicator::before {
+  content: '';
+  position: absolute;
+  top: 35px; /* Offset down by 5px to allow shadow fill up to the edge */
+  left: -22px;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border-top-right-radius: 20px;
+  box-shadow: 1px -5px 0 0 var(--bg); /* Fill up exactly to y=30 (the bar top) */
+  transition: all 0.5s ease;
+}
+
+.navigation-indicator::after {
+  content: '';
+  position: absolute;
+  top: 35px;
+  right: -22px;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border-top-left-radius: 20px;
+  box-shadow: -1px -5px 0 0 var(--bg);
+  transition: all 0.5s ease;
+}
 
     @media (max-width: 640px) {
       .form-row { grid-template-columns: 1fr 1fr; }
@@ -71,7 +121,7 @@
       .trip-date-sub { font-size: 0.62rem; }
       .trip-date-duration { font-size: 0.65rem; }
       .bottom-nav { display: block; }
-      .main-content { padding-top: 68px; padding-bottom: 80px; }      .fab { bottom: 80px; right: 16px; width: 52px; height: 52px; font-size: 1.3rem; }
+      .main-content { padding-top: 68px; padding-bottom: 80px; }      .fab { bottom: 105px; right: 16px; width: 52px; height: 52px; font-size: 1.3rem; }
       #home-view { padding: 20px 16px; }
       .section-title { font-size: 1.3rem; }
       .trip-card { padding: 16px; }
@@ -127,5 +177,5 @@
 
     @supports (padding-bottom: env(safe-area-inset-bottom)) {
       .bottom-nav { padding-bottom: calc(8px + env(safe-area-inset-bottom)); }
-      .fab { bottom: calc(80px + env(safe-area-inset-bottom)); }
+      .fab { bottom: calc(105px + env(safe-area-inset-bottom)); }
     }

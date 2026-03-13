@@ -30,6 +30,8 @@
   <!-- Map Specific CSS -->
   <link rel="stylesheet" href="css/map.css" />
   <link rel="stylesheet" href="css/components/itinerary_controls.css" />
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 
 <body>
@@ -1530,23 +1532,30 @@
   <div class="bottom-nav-wrap" id="bottom-nav-wrap">
     <nav class="bottom-nav" id="bottom-nav" style="display: none">
       <div class="bottom-nav-inner" id="bottom-nav-inner">
+        <div class="navigation-indicator" id="navigation-indicator"></div>
         <button class="bnav-btn active" id="bnav-shared" onclick="switchTabMobile('shared')">
-          <span class="bnav-icon">💸</span>Compartido
+          <i class="ph-bold ph-wallet"></i>
+          <span class="bnav-label">Gastos</span>
         </button>
         <button class="bnav-btn" id="bnav-personal" onclick="switchTabMobile('personal')">
-          <span class="bnav-icon">🔒</span>Personal
+          <i class="ph-bold ph-lock-key"></i>
+          <span class="bnav-label">Privado</span>
         </button>
         <button class="bnav-btn" id="bnav-balance" onclick="switchTabMobile('balance')">
-          <span class="bnav-icon">📊</span>Dashboard
+          <i class="ph-bold ph-chart-pie-slice"></i>
+          <span class="bnav-label">Balance</span>
         </button>
         <button class="bnav-btn" id="bnav-notes" onclick="switchTabMobile('notes')">
-          <span class="bnav-icon">📝</span>Notas
+          <i class="ph-bold ph-note-pencil"></i>
+          <span class="bnav-label">Notas</span>
         </button>
         <button class="bnav-btn" id="bnav-itinerary" onclick="switchTabMobile('itinerary')">
-          <span class="bnav-icon">🗺️</span>Itinerario
+          <i class="ph-bold ph-map-trifold"></i>
+          <span class="bnav-label">Ruta</span>
         </button>
         <button class="bnav-btn" id="bnav-gallery" onclick="switchTabMobile('gallery')">
-          <span class="bnav-icon">📸</span>Galería
+          <i class="ph-bold ph-image"></i>
+          <span class="bnav-label">Fotos</span>
         </button>
       </div>
     </nav>
