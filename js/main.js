@@ -85,7 +85,8 @@ let notifications = [];
 let notifPanelOpen = false;
 
 // ─── Expose globals ───
-window.currentTrip = null; // Exponer estado inicial a Leaflet
+window.currentTrip = null; 
+window.currentTripId = null;
 window.doLogin = doLogin;
 window.doRegister = doRegister;
 window.doLogout = doLogout;
@@ -917,6 +918,7 @@ async function openTripView(tripId) {
   const docSnap = await getDoc(doc(db, "trips", tripId));
   if (!docSnap.exists()) return;
   currentTripId = tripId;
+  window.currentTripId = tripId;
   currentTrip = { id: tripId, ...docSnap.data() };
   window.currentTrip = currentTrip; // Exponer al mapa globalmente
 
@@ -1044,14 +1046,13 @@ async function openTripView(tripId) {
   subscribeGallery();
 
   // Now that the trip subscriptions are set, enable the FAB and default tab
-  switchTab("shared");
+  switchTabMobile("shared"); 
   document.getElementById("bottom-nav").style.display = "block";
-  requestAnimationFrame(() =>
-    requestAnimationFrame(() => {
-      updateTabsArrows();
-      updateBnavHint();
-    }),
-  );
+  
+  requestAnimationFrame(() => {
+    updateTabsArrows();
+    setTimeout(updateNavigationIndicator, 100);
+  });
   // Ensure FAB visibility matches the active tab now that we're in trip view
   const fab = document.getElementById("fab-btn");
   if (fab)
@@ -1103,7 +1104,9 @@ function goHome() {
     unsubscribeGallery = null;
   }
   currentTripId = null;
+  window.currentTripId = null;
   currentTrip = null;
+  window.currentTrip = null;
   loadTrips();
 }
 
@@ -1175,35 +1178,31 @@ function switchTabMobile(tab) {
       if (btn) btn.classList.toggle("active", t === tab);
     },
   );
-  // Scroll active tab into view smoothly
-  const activeBtn = document.getElementById("bnav-" + tab);
-  if (activeBtn)
-    activeBtn.scrollIntoView({
-      behavior: "smooth",
-      block: "nearest",
-      inline: "center",
-    });
-  updateBnavHint();
+  
+  updateNavigationIndicator();
 }
 
-function updateBnavHint() {
-  const inner = document.getElementById("bottom-nav-inner");
-  const hint = document.getElementById("bnav-more-hint");
-  const wrap = document.getElementById("bottom-nav-wrap");
-  if (!inner || !hint) return;
-  const hasMore = inner.scrollLeft < inner.scrollWidth - inner.clientWidth - 4;
-  hint.classList.toggle("visible", hasMore);
-  if (wrap) wrap.classList.toggle("has-more", hasMore);
-}
-
-// Init bottom nav hint listener
-setTimeout(() => {
-  const inner = document.getElementById("bottom-nav-inner");
-  if (inner) {
-    inner.addEventListener("scroll", updateBnavHint, { passive: true });
-    updateBnavHint();
+function updateNavigationIndicator() {
+  const activeBtn = document.querySelector('.bnav-btn.active');
+  const indicator = document.getElementById('navigation-indicator');
+  if (activeBtn && indicator) {
+    const rect = activeBtn.getBoundingClientRect();
+    const parentRect = activeBtn.parentElement.getBoundingClientRect();
+    const center = (rect.left + rect.width / 2) - parentRect.left;
+    indicator.style.left = `${center - 30}px`;
+    indicator.style.opacity = "1";
   }
-}, 600);
+}
+
+// Ensure indicator is positioned on load and resize
+window.addEventListener('resize', updateNavigationIndicator);
+// Initial update with multiple attempts to handle layout settling
+window.addEventListener('load', () => {
+  setTimeout(updateNavigationIndicator, 100);
+  setTimeout(updateNavigationIndicator, 500);
+  setTimeout(updateNavigationIndicator, 1500);
+});
+
 
 // ─── NOTIFICATIONS (in-app, Firestore realtime) ───
 function subscribeNotifications(tripId) {
@@ -5303,4 +5302,3 @@ window.addEventListener("scroll", () => {
     scrollTopBtn.classList.remove("visible");
   }
 }, { passive: true });
-
