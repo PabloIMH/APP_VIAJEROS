@@ -751,16 +751,16 @@
             " />
       </div>
 
-      <div class="form-row">
+      <div class="form-row" id="amount-payer-row">
         <div class="form-group">
           <label>Monto</label>
           <div style="display: flex; gap: 6px">
-            <select id="exp-currency" style="width: 90px; flex-shrink: 0" onchange="onExpCurrencyChange()">
+            <select id="exp-currency" style="width: 76px; flex-shrink: 0" onchange="onExpCurrencyChange()">
               <option value="CLP">CLP</option>
               <option value="EUR">EUR</option>
               <option value="USD">USD</option>
             </select>
-            <input type="number" id="exp-amount" placeholder="0" min="0" style="flex: 1" oninput="onAmountInput()" />
+            <input type="number" id="exp-amount" placeholder="0" min="0" style="flex: 1; min-width: 0;" oninput="onAmountInput()" />
           </div>
           <div id="clp-conversion" style="
                 display: none;

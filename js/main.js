@@ -1972,6 +1972,8 @@ function openAddExpense(forceType) {
     document.getElementById("type-shared").classList.remove("selected");
     document.getElementById("split-group").style.display = "none";
     document.getElementById("paidby-group").style.display = "none";
+    const amountRow = document.getElementById("amount-payer-row");
+    if (amountRow) amountRow.style.gridTemplateColumns = "1fr";
   }
 
   editingExpenseId = null;
@@ -2128,6 +2130,12 @@ function selectExpenseType(type) {
     type === "shared" ? "block" : "none";
   document.getElementById("paidby-group").style.display =
     type === "shared" ? "block" : "none";
+  
+  const amountRow = document.getElementById("amount-payer-row");
+  if (amountRow) {
+    amountRow.style.gridTemplateColumns = type === "shared" ? "1fr 1fr" : "1fr";
+  }
+
   // Tip only shows for Comida + shared
   const tipGroup = document.getElementById("tip-group");
   if (tipGroup)
