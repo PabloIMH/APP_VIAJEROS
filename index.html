@@ -11,7 +11,17 @@
   <link rel="apple-touch-icon" href="img/apple-touch-icon-sinfondo.png" />
   <link rel="icon" type="image/png" href="img/apple-touch-icon-sinfondo.png" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <link rel="manifest" href="manifest.json" />
   <title>Viajeros</title>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('SW registrado', reg))
+          .catch(err => console.log('Error SW', err));
+      });
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link
     href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;0,800;1,300&family=DM+Sans:wght@300;400;500;600&display=swap"
@@ -91,6 +101,26 @@
           data-tooltip="Accede a tus viajes">
           Entrar al viaje →
         </button>
+        <div style="margin-top: 12px; text-align: center">
+          <button class="btn-link" onclick="switchAuthTab('forgot')" style="font-size: 0.85rem; background: none; border: none; color: var(--accent); cursor: pointer; text-decoration: underline;">
+            ¿Olvidaste tu contraseña?
+          </button>
+        </div>
+      </div>
+      <div id="forgot-form" style="display: none">
+        <div class="form-group">
+          <label for="forgot-email">Correo electrónico</label>
+          <input type="email" id="forgot-email" class="form-input" placeholder="tu@correo.com"
+            onkeydown="if (event.key === 'Enter') doForgotPassword();" />
+        </div>
+        <button class="btn btn-primary" onclick="doForgotPassword()" aria-label="Enviar enlace de recuperación">
+          Enviar enlace de recuperación →
+        </button>
+        <div style="margin-top: 16px; text-align: center">
+          <button class="btn-link" onclick="switchAuthTab('login')" style="font-size: 0.85rem; background: none; border: none; color: var(--text2); cursor: pointer;">
+            ← Volver a iniciar sesión
+          </button>
+        </div>
       </div>
       <div id="register-form" style="display: none">
         <div class="form-group">

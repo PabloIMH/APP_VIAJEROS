@@ -1,0 +1,23 @@
+{
+  "name": "Viajeros - Gastos Compartidos",
+  "short_name": "Viajeros",
+  "description": "Gestiona tus gastos de viaje sin drama",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0c10",
+  "theme_color": "#0a0c10",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "img/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/apple-touch-icon-sinfondo.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    }
+  ]
+}

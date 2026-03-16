@@ -6,6 +6,7 @@ import {
   signOut,
   onAuthStateChanged,
   updateProfile,
+  sendPasswordResetEmail,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore,
@@ -90,6 +91,7 @@ window.currentTripId = null;
 window.doLogin = doLogin;
 window.doRegister = doRegister;
 window.doLogout = doLogout;
+window.doForgotPassword = doForgotPassword;
 window.switchAuthTab = switchAuthTab;
 window.openModal = openModal;
 window.closeModal = closeModal;
@@ -462,6 +464,18 @@ async function doRegister() {
   }
 }
 
+async function doForgotPassword() {
+  const email = document.getElementById("forgot-email").value.trim();
+  if (!email) return toast("Ingresa tu correo para recuperar la contraseña");
+  try {
+    await sendPasswordResetEmail(auth, email);
+    toast("Enlace de recuperación enviado a " + email + " ✓");
+    switchAuthTab("login");
+  } catch (e) {
+    toast("Error: " + friendlyError(e.code));
+  }
+}
+
 async function doLogout() {
   // Cancel all Firestore listeners before signing out to avoid permission-denied errors
   if (unsubscribeExpenses) {
@@ -505,6 +519,12 @@ function switchAuthTab(tab) {
     tab === "login" ? "block" : "none";
   document.getElementById("register-form").style.display =
     tab === "register" ? "block" : "none";
+  document.getElementById("forgot-form").style.display =
+    tab === "forgot" ? "block" : "none";
+  
+  if (tab === "forgot") {
+    document.querySelectorAll(".auth-tab").forEach(t => t.classList.remove("active"));
+  }
 }
 
 // Hacer funciones disponibles globalmente
