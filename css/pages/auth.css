@@ -198,21 +198,20 @@
   z-index: 100;
   padding: 20px;
   min-height: 100vh;
-  /* Asegurar centrado en móviles */
+  background: transparent !important;
   overflow-y: auto;
 }
 
 .auth-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: transparent !important;
+  border: none !important;
   border-radius: 24px;
-  padding: 48px 40px;
+  padding: 48px 20px;
   width: 100%;
   max-width: 420px;
-  /* Mejorar centrado vertical */
   margin: auto;
   position: relative;
-  box-shadow: var(--shadow);
+  box-shadow: none !important;
   animation: slideUp 0.5s ease;
 }
 
