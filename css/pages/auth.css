@@ -435,3 +435,108 @@ select option {
   padding: 8px 16px;
   font-size: 0.85rem;
 }
+/* ─── WELCOME STEP ─── */
+#welcome-step {
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.welcome-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.welcome-header p {
+  color: var(--text2);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.social-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.btn-social {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 100px; /* Estilo Wanderlog (píldora) */
+  color: #1a1a1a;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-social i {
+  font-size: 1.4rem;
+}
+
+.btn-social:hover {
+  background: #f8f8f8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.btn-social:active {
+  transform: translateY(0);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0 24px;
+  color: var(--text3);
+  font-size: 0.85rem;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.auth-divider span {
+  padding: 0 12px;
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 8px;
+}
+
+.auth-footer p {
+  color: var(--text2);
+  font-size: 0.9rem;
+}
+
+.auth-footer-link {
+  color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 4px;
+  transition: opacity 0.2s;
+}
+
+.auth-footer-link:hover {
+  text-decoration: underline;
+  opacity: 0.8;
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

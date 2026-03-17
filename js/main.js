@@ -410,20 +410,27 @@ onAuthStateChanged(auth, (user) => {
       currentUser = null;
 
       if (initialAuthCheck) {
-        // Primera carga: pasar de splash a login
+        // Primera carga: pasar de splash a welcome
         document.getElementById("app").style.display = "none";
         document.getElementById("auth-screen").style.opacity = "0";
         document.getElementById("auth-screen").style.display = "flex";
+        
+        // Mostrar pantalla de bienvenida por defecto
+        switchAuthTab('welcome');
+
         setTimeout(() => {
           document.getElementById("auth-screen").style.opacity = "1";
         }, 50);
       } else {
-        // Logout: mostrar login con animación suave
+        // Logout: mostrar bienvenida con animación suave
         document.getElementById("app").style.opacity = "0";
         setTimeout(() => {
           document.getElementById("app").style.display = "none";
           document.getElementById("auth-screen").style.display = "flex";
           document.getElementById("auth-screen").style.opacity = "0";
+          
+          switchAuthTab('welcome');
+
           setTimeout(() => {
             document.getElementById("auth-screen").style.opacity = "1";
           }, 50);
@@ -525,14 +532,27 @@ async function doLogout() {
 }
 
 function switchAuthTab(tab) {
+  // Manejar visibilidad de secciones principales
+  const welcomeStep = document.getElementById("welcome-step");
+  const authForms = document.getElementById("auth-forms");
+
+  if (tab === "welcome") {
+    welcomeStep.style.display = "flex";
+    authForms.style.display = "none";
+    return;
+  } else {
+    welcomeStep.style.display = "none";
+    authForms.style.display = "block";
+  }
+
   document
     .querySelectorAll(".auth-tab")
-    .forEach((t, i) =>
-      t.classList.toggle(
-        "active",
-        (i === 0 && tab === "login") || (i === 1 && tab === "register"),
-      ),
-    );
+    .forEach((t) => {
+      const isLogin = t.id === "tab-login" && tab === "login";
+      const isRegister = t.id === "tab-register" && tab === "register";
+      t.classList.toggle("active", isLogin || isRegister);
+    });
+
   document.getElementById("login-form").style.display =
     tab === "login" ? "block" : "none";
   document.getElementById("register-form").style.display =

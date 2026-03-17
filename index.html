@@ -65,14 +65,45 @@
         <h1>✈ Viajeros</h1>
         <p>Gastos compartidos sin drama</p>
       </div>
-      <div class="auth-tabs">
-        <div class="auth-tab active" onclick="switchAuthTab('login')">
-          Iniciar sesión
+      <div id="welcome-step">
+        <div class="welcome-header">
+          <p>Conecta y comparte tus viajes de forma sencilla</p>
         </div>
-        <div class="auth-tab" onclick="switchAuthTab('register')">
-          Registrarse
+        <div class="social-btns">
+          <button class="btn-social" onclick="toast('Próximamente...')">
+            <i class="ph-fill ph-facebook-logo" style="color: #1877F2;"></i>
+            Regístrate con Facebook
+          </button>
+          <button class="btn-social" onclick="toast('Próximamente...')">
+            <i class="ph-fill ph-google-logo" style="color: #EA4335;"></i>
+            Regístrate con Google
+          </button>
+          <button class="btn-social" onclick="toast('Próximamente...')">
+            <i class="ph-fill ph-apple-logo" style="color: var(--text);"></i>
+            Regístrate con Apple
+          </button>
+        </div>
+        <div class="auth-divider">
+          <span>o</span>
+        </div>
+        <button class="btn btn-primary" onclick="switchAuthTab('register')" style="margin-bottom: 24px;">
+          <i class="ph ph-envelope"></i>
+          Regístrate por correo
+        </button>
+        <div class="auth-footer">
+          <p>¿Ya tienes una cuenta? <span class="auth-footer-link" onclick="switchAuthTab('login')">Iniciar sesión</span></p>
         </div>
       </div>
+
+      <div id="auth-forms" style="display: none">
+        <div class="auth-tabs">
+          <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">
+            Iniciar sesión
+          </div>
+          <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">
+            Registrarse
+          </div>
+        </div>
       <div id="login-form">
         <div class="form-group">
           <label for="login-email">Correo electrónico</label>
