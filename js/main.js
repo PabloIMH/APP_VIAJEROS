@@ -465,13 +465,31 @@ async function doRegister() {
 }
 
 async function doForgotPassword() {
-  const email = document.getElementById("forgot-email").value.trim();
+  const emailInput = document.getElementById("forgot-email");
+  const email = emailInput.value.trim();
+  const btn = document.getElementById("forgot-btn");
+  const initialView = document.getElementById("forgot-initial");
+  const successView = document.getElementById("forgot-success");
+  const displayEmail = document.getElementById("sent-email-display");
+
   if (!email) return toast("Ingresa tu correo para recuperar la contraseña");
+
+  btn.disabled = true;
+  btn.textContent = "Enviando...";
+
   try {
     await sendPasswordResetEmail(auth, email);
-    toast("Enlace de recuperación enviado a " + email + " ✓");
-    switchAuthTab("login");
+    displayEmail.textContent = email;
+    initialView.style.display = "none";
+    successView.style.display = "block";
+    
+    // Auto-focus the back button for accessibility
+    setTimeout(() => {
+      successView.querySelector("button")?.focus();
+    }, 100);
   } catch (e) {
+    btn.disabled = false;
+    btn.textContent = "Enviar enlace de recuperación →";
     toast("Error: " + friendlyError(e.code));
   }
 }
@@ -524,6 +542,11 @@ function switchAuthTab(tab) {
   
   if (tab === "forgot") {
     document.querySelectorAll(".auth-tab").forEach(t => t.classList.remove("active"));
+    // Reset forgot form state
+    document.getElementById("forgot-initial").style.display = "block";
+    document.getElementById("forgot-success").style.display = "none";
+    document.getElementById("forgot-btn").disabled = false;
+    document.getElementById("forgot-btn").textContent = "Enviar enlace de recuperación →";
   }
 }
 

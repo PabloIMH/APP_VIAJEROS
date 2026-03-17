@@ -108,14 +108,27 @@
         </div>
       </div>
       <div id="forgot-form" style="display: none">
-        <div class="form-group">
-          <label for="forgot-email">Correo electrónico</label>
-          <input type="email" id="forgot-email" class="form-input" placeholder="tu@correo.com"
-            onkeydown="if (event.key === 'Enter') doForgotPassword();" />
+        <div id="forgot-initial">
+          <div class="form-group">
+            <label for="forgot-email">Correo electrónico</label>
+            <input type="email" id="forgot-email" class="form-input" placeholder="tu@correo.com"
+              onkeydown="if (event.key === 'Enter') doForgotPassword();" />
+          </div>
+          <button class="btn btn-primary" id="forgot-btn" onclick="doForgotPassword()" aria-label="Enviar enlace de recuperación">
+            Enviar enlace de recuperación →
+          </button>
         </div>
-        <button class="btn btn-primary" onclick="doForgotPassword()" aria-label="Enviar enlace de recuperación">
-          Enviar enlace de recuperación →
-        </button>
+
+        <div id="forgot-success" style="display: none; text-align: center; padding: 20px 0;">
+          <div style="font-size: 3rem; margin-bottom: 16px;">📧</div>
+          <h3 style="color: var(--accent); margin-bottom: 12px; font-family: 'Fraunces', serif;">¡Correo enviado!</h3>
+          <p style="color: var(--text2); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
+            Hemos enviado las instrucciones para recuperar tu contraseña a <strong id="sent-email-display" style="color: var(--text);"></strong>.
+          </p>
+          <button class="btn btn-ghost" onclick="switchAuthTab('login')" style="width: 100%;">
+            Volver al inicio
+          </button>
+        </div>
         <div style="margin-top: 16px; text-align: center">
           <button class="btn-link" onclick="switchAuthTab('login')" style="font-size: 0.85rem; background: none; border: none; color: var(--text2); cursor: pointer;">
             ← Volver a iniciar sesión
