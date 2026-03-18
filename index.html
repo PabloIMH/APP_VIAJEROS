@@ -74,7 +74,7 @@
             <i class="ph-fill ph-facebook-logo" style="color: #1877F2;"></i>
             Regístrate con Facebook
           </button>
-          <button class="btn-social" onclick="toast('Próximamente...')">
+          <button class="btn-social" onclick="doLoginWithGoogle()">
             <i class="ph-fill ph-google-logo" style="color: #EA4335;"></i>
             Regístrate con Google
           </button>
@@ -199,7 +199,8 @@
           data-tooltip="Regístrate para empezar">
           Crear cuenta →
         </button>
-      </div>
+      </div> <!-- close register-form -->
+      </div> <!-- close auth-forms -->
       <div style="margin-top: 16px; text-align: center">
         <p class="text-muted">¿Tienes un código de viaje?</p>
         <div style="display: flex; gap: 8px; margin-top: 8px">
@@ -210,8 +211,8 @@
           </button>
         </div>
       </div>
-    </div>
-  </div>
+    </div> <!-- close auth-card -->
+  </div> <!-- close auth-screen -->
 
   <!-- MAIN APP -->
   <div id="app">
@@ -1858,16 +1859,7 @@
   <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
   <!-- LOADING OVERLAY -->
-  <div class="loading-overlay" id="loading-overlay" style="
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(10, 12, 16, 0.8);
-        z-index: 9999;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      ">
+  <div class="loading-overlay" id="loading-overlay">
     <div class="loading-spinner">
       <div class="spinner"></div>
       <p style="margin-top: 16px; color: var(--text2)">Cargando...</p>

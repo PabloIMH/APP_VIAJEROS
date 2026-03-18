@@ -7,6 +7,8 @@ import {
   onAuthStateChanged,
   updateProfile,
   sendPasswordResetEmail,
+  GoogleAuthProvider,
+  signInWithPopup,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore,
@@ -570,12 +572,29 @@ function switchAuthTab(tab) {
   }
 }
 
+async function doLoginWithGoogle() {
+  const provider = new GoogleAuthProvider();
+  try {
+    const result = await signInWithPopup(auth, provider);
+    // El usuario ya se maneja en onAuthStateChanged
+    console.log("Login con Google exitoso:", result.user);
+  } catch (error) {
+    console.error("Error en login con Google:", error);
+    if (error.code === 'auth/popup-blocked') {
+      toast("Error: El navegador bloqueó la ventana emergente.");
+    } else {
+      toast("Error al iniciar sesión con Google.");
+    }
+  }
+}
+
 // Hacer funciones disponibles globalmente
 window.doLogin = doLogin;
 window.doRegister = doRegister;
 window.doLogout = doLogout;
 window.switchAuthTab = switchAuthTab;
 window.toggleTheme = toggleTheme;
+window.doLoginWithGoogle = doLoginWithGoogle;
 
 // ─── TRIPS ───
 async function loadTrips() {
