@@ -3978,11 +3978,19 @@ function renderItinEventCard(ev) {
   const mapsButton = ev.mapsUrl
     ? `<button class="itin-maps-btn" onclick="openGoogleMaps('${ev.mapsUrl.replace(/'/g, "\\'")}')">🗺️ Ver en Maps</button>`
     : "";
+  let linkLabel = "🔗 Ir a la web";
+  if (ev.category === "Alojamiento") linkLabel = "🔗 Ver hospedaje";
+  else if (ev.category === "Vuelo") linkLabel = "🔗 Ver vuelo";
+  else if (ev.category === "Comida") linkLabel = "🔗 Ver restaurante";
+  
   const reservaBtn = ev.receiptUrl
-    ? `<button class="itin-maps-btn" onclick="openLightbox('${ev.receiptUrl}')" style="background:rgba(124,239,176,0.12);color:var(--accent3);border-color:rgba(124,239,176,0.25)">📎 Ver reserva</button>`
+    ? `<button class="itin-maps-btn" onclick="openLightbox('${ev.receiptUrl}')" style="background:rgba(124,239,176,0.12);color:var(--accent3);border-color:rgba(124,239,176,0.25)">📸 Ver comprobante</button>`
     : "";
   const bookingBtn = ev.bookingUrl
-    ? `<button class="itin-maps-btn" onclick="window.open('${ev.bookingUrl.replace(/'/g, "\\'")}','_blank')" style="background:rgba(91,140,247,0.12);color:var(--accent2);border-color:rgba(91,140,247,0.25)">🔗 Ver link</button>`
+    ? `<button class="itin-maps-btn" onclick="window.open('${ev.bookingUrl.replace(/'/g, "\\'")}','_blank')" style="background:rgba(91,140,247,0.12);color:var(--accent2);border-color:rgba(91,140,247,0.25)">${linkLabel}</button>`
+    : "";
+  const videoBtn = ev.videoUrl
+    ? `<button class="itin-maps-btn" onclick="window.open('${ev.videoUrl.replace(/'/g, "\\'")}','_blank')" style="background:rgba(255,100,100,0.12);color:var(--danger);border-color:rgba(255,100,100,0.25)">🎬 Ver video</button>`
     : "";
   const noteHtml = ev.note
     ? `<div class="itin-event-note">💬 ${ev.note}</div>`
@@ -4001,7 +4009,7 @@ function renderItinEventCard(ev) {
         <div class="itin-event-body">
           <div class="itin-event-title">${ev.title}</div>
           <div class="itin-event-meta">${timeLabel}${locationLabel}</div>
-          ${mapsButton || reservaBtn || bookingBtn ? `<div class="itin-event-maps" style="display:flex;flex-wrap:wrap;gap:6px">${mapsButton}${reservaBtn}${bookingBtn}</div>` : ""}
+          ${mapsButton || reservaBtn || bookingBtn || videoBtn ? `<div class="itin-event-maps" style="display:flex;flex-wrap:wrap;gap:6px">${mapsButton}${reservaBtn}${bookingBtn}${videoBtn}</div>` : ""}
           ${noteHtml}
           ${tagHtml ? `<div class="itin-event-tags">${tagHtml}</div>` : ""}
         </div>
@@ -4135,6 +4143,7 @@ function openAddItinEvent(dateStr) {
   document.getElementById("itin-location").value = "";
   document.getElementById("itin-maps-url").value = "";
   document.getElementById("itin-booking-url").value = "";
+  document.getElementById("itin-video-url").value = "";
   document.getElementById("itin-receipt").value = "";
   document.getElementById("itin-file-name-display").textContent =
     "Seleccionar foto o comprobante...";
@@ -4199,6 +4208,7 @@ function openEditItinEvent(eventId, dateStr) {
   document.getElementById("itin-location").value = ev.location || "";
   document.getElementById("itin-maps-url").value = ev.mapsUrl || "";
   document.getElementById("itin-booking-url").value = ev.bookingUrl || "";
+  document.getElementById("itin-video-url").value = ev.videoUrl || "";
   document.getElementById("itin-note").value = ev.note || "";
   selectedItinCat = ev.category || "Visita";
   selectedItinCatIcon = ev.icon || "📍";
@@ -4393,6 +4403,7 @@ async function saveItinEvent() {
     mapsUrl,
     note,
     bookingUrl: document.getElementById("itin-booking-url").value.trim(),
+    videoUrl: document.getElementById("itin-video-url").value.trim(),
     date,
     category: selectedItinCat,
     icon: selectedItinCatIcon,
