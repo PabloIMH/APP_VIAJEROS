@@ -128,6 +128,13 @@ window.clearExpenseSearch = clearExpenseSearch;
 window.setExpenseFilterCat = setExpenseFilterCat;
 window.openAddItinEvent = openAddItinEvent;
 window.openEditItinEvent = openEditItinEvent;
+window.showItinDetails = function(eventId) {
+  const ev = (window._itinEvents || []).find((e) => e.id === eventId);
+  if (ev && ev.details) {
+    document.getElementById("view-itin-details-content").textContent = ev.details;
+    openModal("view-itin-details-modal");
+  }
+};
 function updateItinFileName(input) {
   const label = document.getElementById("itin-receipt-label");
   const nameDisplay = document.getElementById("itin-file-name-display");
@@ -1528,7 +1535,11 @@ document.addEventListener("click", (e) => {
   ) {
     document
       .querySelectorAll('[id^="itin-kebab-"]')
-      .forEach((m) => (m.style.display = "none"));
+      .forEach((m) => {
+        m.style.display = "none";
+        const parentEvent = m.closest(".itin-event");
+        if (parentEvent) parentEvent.style.zIndex = "1";
+      });
   }
 });
 
@@ -3753,6 +3764,15 @@ function subscribeItinerary() {
   });
 }
 
+window.filterItinerary = function(query) {
+  window._itinSearchQuery = query;
+  if (query && query.trim() !== "") {
+    window._itinShowFromStart = true;
+    itinVisibleDays = 999;
+  }
+  if (window._itinShowFromStart) renderItineraryFromStart(); else renderItinerary();
+};
+
 function renderItinerary(resetPagination) {
   if (!currentTrip) return;
   if (resetPagination) itinVisibleDays = 5;
@@ -3765,6 +3785,8 @@ function renderItinerary(resetPagination) {
     container.innerHTML = `<div class="itin-empty"><div class="itin-empty-icon">📅</div><p>El viaje no tiene fechas definidas</p><small>Edita el viaje para agregar fechas de inicio y fin</small></div>`;
     progressWrap.style.display = "none";
     document.getElementById("itin-controls").style.display = "none";
+    const sc = document.getElementById("itin-search-container");
+    if(sc) sc.style.display = "none";
     return;
   }
 
@@ -3775,6 +3797,8 @@ function renderItinerary(resetPagination) {
   const pct = Math.min(100, Math.round((passedDays / totalDays) * 100));
   progressWrap.style.display = "";
   document.getElementById("itin-controls").style.display = "flex";
+  const sc2 = document.getElementById("itin-search-container");
+  if(sc2) sc2.style.display = "block";
   document.getElementById("itin-progress-fill").style.width = pct + "%";
   document.getElementById("itin-progress-label").textContent =
     `Día ${Math.min(passedDays, totalDays)} de ${totalDays}`;
@@ -3808,11 +3832,23 @@ function renderItinerary(resetPagination) {
   const daysHtml = visibleDays
     .map((dateStr, i) => {
       const idx = allDays.indexOf(dateStr);
-      const dayEvents = events
+      let dayEvents = events
         .filter((e) => e.date === dateStr)
         .sort((a, b) =>
           (a.timeStart || "00:00").localeCompare(b.timeStart || "00:00"),
         );
+      const query = (window._itinSearchQuery || "").toLowerCase().trim();
+      if (query) {
+        dayEvents = dayEvents.filter((e) => 
+          (e.title || "").toLowerCase().includes(query) ||
+          (e.location || "").toLowerCase().includes(query) ||
+          (e.note || "").toLowerCase().includes(query) ||
+          (e.details || "").toLowerCase().includes(query) ||
+          (e.category || "").toLowerCase().includes(query) ||
+          (e.tags || []).some(t => t.toLowerCase().includes(query))
+        );
+        if (dayEvents.length === 0) return "";
+      }
       const d = new Date(dateStr + "T12:00:00");
       const dayLabel = `Día ${idx + 1}`;
       const dateLabel = `${weekDays[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
@@ -3822,7 +3858,11 @@ function renderItinerary(resetPagination) {
         .map((ev) => renderItinEventCard(ev))
         .join("");
 
-      const isCollapsed = window._itinInitiallyCollapsed;
+      window._itinDayStates = window._itinDayStates || {};
+      const isExpandedBySearch = query && dayEvents.length > 0;
+      const isCollapsed = isExpandedBySearch ? false : (window._itinDayStates[dateStr] !== undefined
+        ? window._itinDayStates[dateStr]
+        : window._itinInitiallyCollapsed);
 
       return `<div class="itin-day-block ${isCollapsed ? 'collapsed' : ''}" id="itin-day-${dateStr}">
           <div class="itin-day-header" onclick="toggleItinDay('${dateStr}')">
@@ -3995,6 +4035,9 @@ function renderItinEventCard(ev) {
   const noteHtml = ev.note
     ? `<div class="itin-event-note">💬 ${ev.note}</div>`
     : "";
+  const detailsBtn = ev.details
+    ? `<button class="itin-maps-btn" onclick="showItinDetails('${ev.id}')" style="background:rgba(255,152,0,0.12);color:#F57C00;border-color:rgba(255,152,0,0.25)">💡 Ver recomendaciones</button>`
+    : "";
 
   const itinIcons = { Visita: "🏛️", Comida: "🍽️", Alojamiento: "🏠", Vuelo: "✈️", Tren: "🚂", Teleférico: "🚠", Moto: "🛵", Barco: "🚢", Bici: "🚲", Auto: "🚗", Actividad: "🎯", Otro: "📌" };
   const evIcon = ev.icon || itinIcons[ev.category] || "📌";
@@ -4009,7 +4052,7 @@ function renderItinEventCard(ev) {
         <div class="itin-event-body">
           <div class="itin-event-title">${ev.title}</div>
           <div class="itin-event-meta">${timeLabel}${locationLabel}</div>
-          ${mapsButton || reservaBtn || bookingBtn || videoBtn ? `<div class="itin-event-maps" style="display:flex;flex-wrap:wrap;gap:6px">${mapsButton}${reservaBtn}${bookingBtn}${videoBtn}</div>` : ""}
+          ${mapsButton || reservaBtn || bookingBtn || videoBtn || detailsBtn ? `<div class="itin-event-maps" style="display:flex;flex-wrap:wrap;gap:6px">${mapsButton}${reservaBtn}${bookingBtn}${videoBtn}${detailsBtn}</div>` : ""}
           ${noteHtml}
           ${tagHtml ? `<div class="itin-event-tags">${tagHtml}</div>` : ""}
         </div>
@@ -4024,7 +4067,12 @@ function renderItinEventCard(ev) {
 }
 
 function toggleItinDay(dateStr) {
-  document.getElementById("itin-day-" + dateStr)?.classList.toggle("collapsed");
+  const el = document.getElementById("itin-day-" + dateStr);
+  if (el) {
+    el.classList.toggle("collapsed");
+    window._itinDayStates = window._itinDayStates || {};
+    window._itinDayStates[dateStr] = el.classList.contains("collapsed");
+  }
 }
 
 function itinLoadMore() {
@@ -4075,6 +4123,8 @@ function renderItineraryFromStart() {
   document.getElementById("itin-progress-label").textContent =
     `Día ${Math.min(passedDays, totalDays)} de ${totalDays}`;
   document.getElementById("itin-controls").style.display = "flex";
+  const sc3 = document.getElementById("itin-search-container");
+  if(sc3) sc3.style.display = "block";
 
   const visibleDays = allDays.slice(0, itinVisibleDays);
   const hasMore = itinVisibleDays < allDays.length;
@@ -4082,11 +4132,23 @@ function renderItineraryFromStart() {
 
   const daysHtml = visibleDays
     .map((dateStr, idx) => {
-      const dayEvents = events
+      let dayEvents = events
         .filter((e) => e.date === dateStr)
         .sort((a, b) =>
           (a.timeStart || "00:00").localeCompare(b.timeStart || "00:00"),
         );
+      const query = (window._itinSearchQuery || "").toLowerCase().trim();
+      if (query) {
+        dayEvents = dayEvents.filter((e) => 
+          (e.title || "").toLowerCase().includes(query) ||
+          (e.location || "").toLowerCase().includes(query) ||
+          (e.note || "").toLowerCase().includes(query) ||
+          (e.details || "").toLowerCase().includes(query) ||
+          (e.category || "").toLowerCase().includes(query) ||
+          (e.tags || []).some(t => t.toLowerCase().includes(query))
+        );
+        if (dayEvents.length === 0) return "";
+      }
       const d = new Date(dateStr + "T12:00:00");
       const dayLabel = `Día ${idx + 1}`;
       const dateLabel = `${weekDays[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
@@ -4096,7 +4158,11 @@ function renderItineraryFromStart() {
         .map((ev) => renderItinEventCard(ev))
         .join("");
       
-      const isCollapsed = window._itinInitiallyCollapsed;
+      window._itinDayStates = window._itinDayStates || {};
+      const isExpandedBySearch = query && dayEvents.length > 0;
+      const isCollapsed = isExpandedBySearch ? false : (window._itinDayStates[dateStr] !== undefined
+        ? window._itinDayStates[dateStr]
+        : window._itinInitiallyCollapsed);
 
       return `<div class="itin-day-block ${isCollapsed ? 'collapsed' : ''}" id="itin-day-${dateStr}">
           <div class="itin-day-header" onclick="toggleItinDay('${dateStr}')">
@@ -4151,6 +4217,7 @@ function openAddItinEvent(dateStr) {
   document.getElementById("itin-receipt-preview-link").style.display = "none";
   window._itinDeleteReceipt = false;
   document.getElementById("itin-note").value = "";
+  document.getElementById("itin-details-text").value = "";
   activeItinTags.clear();
   selectedItinCat = "Visita";
   selectedItinCatIcon = "🏛️";
@@ -4210,6 +4277,7 @@ function openEditItinEvent(eventId, dateStr) {
   document.getElementById("itin-booking-url").value = ev.bookingUrl || "";
   document.getElementById("itin-video-url").value = ev.videoUrl || "";
   document.getElementById("itin-note").value = ev.note || "";
+  document.getElementById("itin-details-text").value = ev.details || "";
   selectedItinCat = ev.category || "Visita";
   selectedItinCatIcon = ev.icon || "📍";
   // Restore category selection
@@ -4338,6 +4406,7 @@ async function saveItinEvent() {
   const location = document.getElementById("itin-location").value.trim();
   const mapsUrl = document.getElementById("itin-maps-url").value.trim();
   const note = document.getElementById("itin-note").value.trim();
+  const details = document.getElementById("itin-details-text").value.trim();
 
   let date = editingItinDay;
   if (!date) {
@@ -4398,6 +4467,7 @@ async function saveItinEvent() {
     timeStart,
     timeEnd,
     location,
+    details,
     lat,
     lng,
     mapsUrl,
@@ -5180,12 +5250,25 @@ function toggleItinKebab(id, event) {
   const isOpen = menu.style.display === "block";
   document
     .querySelectorAll('[id^="itin-kebab-"]')
-    .forEach((m) => (m.style.display = "none"));
-  menu.style.display = isOpen ? "none" : "block";
+    .forEach((m) => {
+      m.style.display = "none";
+      const parentEvent = m.closest(".itin-event");
+      if (parentEvent) parentEvent.style.zIndex = "1";
+    });
+  if (!isOpen) {
+    menu.style.display = "block";
+    const parentEvent = menu.closest(".itin-event");
+    if (parentEvent) parentEvent.style.zIndex = "99";
+  }
 }
+
 function closeItinKebab(id) {
   const menu = document.getElementById("itin-kebab-" + id);
-  if (menu) menu.style.display = "none";
+  if (menu) {
+    menu.style.display = "none";
+    const parentEvent = menu.closest(".itin-event");
+    if (parentEvent) parentEvent.style.zIndex = "1";
+  }
 }
 window.toggleItinKebab = toggleItinKebab;
 window.closeItinKebab = closeItinKebab;
@@ -5377,6 +5460,7 @@ function scrollToTop() {
  */
 function toggleAllItineraryDays(expand) {
   window._itinInitiallyCollapsed = !expand;
+  window._itinDayStates = {};
   const allDayBlocks = document.querySelectorAll(".itin-day-block");
   allDayBlocks.forEach(block => {
     if (expand) {

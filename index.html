@@ -592,6 +592,10 @@
               </div>
 
               <!-- BOTONES DE CONTROL DE ITINERARIO (Expandir/Contraer) -->
+              <div class="itin-search-container" id="itin-search-container" style="display: none; position: relative; margin-bottom: 12px; margin-top: 4px; padding: 0 4px;">
+                <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 1rem;">🔍</span>
+                <input type="text" id="itin-search-input" placeholder="Buscar actividad, lugar..." style="width: 100%; padding: 12px 12px 12px 40px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface2); color: var(--text); font-size: 0.88rem; transition: border 0.2s; outline: none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="filterItinerary(this.value)">
+              </div>
               <div class="itin-controls" id="itin-controls" style="display: none;">
                 <button class="itin-control-btn" onclick="toggleAllItineraryDays(true)">
                   <svg class="itin-control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -1523,6 +1527,12 @@
       </div>
 
       <div class="form-group">
+        <button type="button" class="btn btn-ghost" style="width: 100%; border: 1px dashed var(--border); font-size: 0.85rem;" onclick="openModal('itin-details-modal')">
+          ➕ Agregar recomendaciones adicionales
+        </button>
+      </div>
+
+      <div class="form-group">
         <label>Etiquetas</label>
         <div class="itin-tag-row">
           <div class="itin-tag-toggle must" id="itag-must" onclick="toggleItinTag('must')">
@@ -1611,6 +1621,35 @@
           Guardar
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- ITINERARY DETAILS SUB-MODAL -->
+  <div class="modal-overlay" id="itin-details-modal" style="z-index: 2000;">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Recomendaciones y detalles 📝</h2>
+      <p style="color: var(--text3); font-size: 0.8rem; margin-bottom: 12px;">Aquí puedes agregar información extra, recomendaciones, detalles, etc.</p>
+      <div class="form-group">
+        <textarea id="itin-details-text" placeholder="1. Reserva de Trenes: ...&#10;2. Equipaje: ..." style="height: 200px; resize: none; font-family: inherit; font-size: 0.85rem;"></textarea>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 4px">
+        <button class="btn btn-primary" style="flex: 1" onclick="closeModal('itin-details-modal')">
+          Listo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW ITINERARY DETAILS MODAL -->
+  <div class="modal-overlay" id="view-itin-details-modal" style="z-index: 2000;">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Recomendaciones adicionales 💡</h2>
+      <div id="view-itin-details-content" style="white-space: pre-wrap; font-size: 0.9rem; color: var(--text); line-height: 1.6; margin-bottom: 20px; margin-top: 10px; background: var(--surface2); padding: 12px; border-radius: 8px;"></div>
+      <button class="btn btn-primary" style="width: 100%" onclick="closeModal('view-itin-details-modal')">
+        Cerrar
+      </button>
     </div>
   </div>
 
