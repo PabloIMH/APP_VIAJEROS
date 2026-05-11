@@ -1,6 +1,9 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+  auth, db, storage, 
+  ref, uploadBytesResumable, getDownloadURL, deleteObject 
+} from "./config/firebase.js";
+
 import {
-  getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   signOut,
@@ -10,8 +13,8 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
 import {
-  getFirestore,
   collection,
   doc,
   addDoc,
@@ -31,19 +34,6 @@ import {
   deleteField,
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDul4Wf-OzhugXQVrDbSF-kR9YEfqf4kXw",
-  authDomain: "viajes-677d5.firebaseapp.com",
-  projectId: "viajes-677d5",
-  storageBucket: "viajes-677d5.firebasestorage.app",
-  messagingSenderId: "195586680424",
-  appId: "1:195586680424:web:3d639b746b292faa6e7ddd",
-};
-
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-
 // ─── State ───
 let currentUser = null;
 let currentTrip = null;
@@ -60,8 +50,10 @@ let unsubscribeNotifications = null;
 let unsubscribeItinerary = null;
 let unsubscribeGallery = null;
 let unsubscribeTrip = null;
+
 let unsubscribeGlobalNotifs = null;
 let editingExpenseId = null;
+
 
 // Itinerary state
 let selectedItinCat = "Visita";
@@ -77,6 +69,8 @@ let gallerySelectedDay = null;
 let galleryPhotoFile = null;
 let galleryLbPhotos = [];
 let galleryLbIndex = 0;
+
+
 
 // Filters state
 let currentExpenses = [];
@@ -176,8 +170,10 @@ window.openGalleryLightbox = openGalleryLightbox;
 window.galleryLbNav = galleryLbNav;
 window.closeGalleryLightbox = closeGalleryLightbox;
 window.openGoogleMaps = openGoogleMaps;
+
 window.toggleUserMenu = toggleUserMenu;
 window.closeUserMenu = closeUserMenu;
+
 window.openChangePhotoModal = openChangePhotoModal;
 window.onAvatarPhotoSelected = onAvatarPhotoSelected;
 window.saveAvatarPhoto = saveAvatarPhoto;
@@ -536,6 +532,8 @@ async function doLogout() {
     unsubscribeTrip();
     unsubscribeTrip = null;
   }
+
+
   await signOut(auth);
   document.getElementById("bottom-nav").style.display = "none";
 }
@@ -1131,12 +1129,14 @@ async function openTripView(tripId) {
   subscribeExpenses();
   subscribeNotes();
   subscribeNotifications(tripId);
+
+
   subscribeItinerary();
   subscribeGallery();
 
   // Now that the trip subscriptions are set, enable the FAB and default tab
-  switchTabMobile("shared"); 
   document.getElementById("bottom-nav").style.display = "block";
+  switchTabMobile("shared"); 
   
   requestAnimationFrame(() => {
     updateTabsArrows();
@@ -1192,6 +1192,8 @@ function goHome() {
     unsubscribeGallery();
     unsubscribeGallery = null;
   }
+
+
   currentTripId = null;
   window.currentTripId = null;
   currentTrip = null;
@@ -1211,12 +1213,20 @@ function switchTab(tab) {
     (t) => {
       const btn = document.getElementById("sb-" + t);
       if (btn) btn.classList.toggle("active", t === tab);
+      const bbtn = document.getElementById("bnav-" + t);
+      if (bbtn) bbtn.classList.toggle("active", t === tab);
     },
   );
+  
+  updateNavigationIndicator();
+
+
 
   if (tab === "balance") renderDashboard();
   if (tab === "itinerary") renderItinerary(true);
   if (tab === "gallery") renderGallery();
+
+
 
   const filtersBar = document.getElementById("expense-filters-bar");
   if (filtersBar) {
@@ -1245,7 +1255,9 @@ function switchTab(tab) {
     fab.style.display = "flex";
     fab.title = "Agregar foto";
     fab.onclick = () => openAddPhoto();
+
   } else {
+
     fab.style.display = "flex";
     fab.title = "Agregar gasto";
     fab.onclick = () => openAddExpense(window._currentTabType || "shared");
@@ -1261,18 +1273,11 @@ function switchTab(tab) {
 function switchTabMobile(tab) {
   window._currentTabType = tab === "personal" ? "personal" : "shared";
   switchTab(tab);
-  ["shared", "personal", "balance", "notes", "itinerary", "gallery"].forEach(
-    (t) => {
-      const btn = document.getElementById("bnav-" + t);
-      if (btn) btn.classList.toggle("active", t === tab);
-    },
-  );
-  
-  updateNavigationIndicator();
 }
 
+
 function updateNavigationIndicator() {
-  const activeBtn = document.querySelector('.bnav-btn.active');
+  const activeBtn = document.querySelector('.bottom-nav-inner .bnav-btn.active');
   const indicator = document.getElementById('navigation-indicator');
   if (activeBtn && indicator) {
     const rect = activeBtn.getBoundingClientRect();
@@ -3798,7 +3803,7 @@ function renderItinerary(resetPagination) {
   progressWrap.style.display = "";
   document.getElementById("itin-controls").style.display = "flex";
   const sc2 = document.getElementById("itin-search-container");
-  if(sc2) sc2.style.display = "block";
+  if(sc2) sc2.style.display = "flex";
   document.getElementById("itin-progress-fill").style.width = pct + "%";
   document.getElementById("itin-progress-label").textContent =
     `Día ${Math.min(passedDays, totalDays)} de ${totalDays}`;
@@ -3832,14 +3837,16 @@ function renderItinerary(resetPagination) {
   const daysHtml = visibleDays
     .map((dateStr, i) => {
       const idx = allDays.indexOf(dateStr);
-      let dayEvents = events
+      const allDayEvents = events
         .filter((e) => e.date === dateStr)
         .sort((a, b) =>
           (a.timeStart || "00:00").localeCompare(b.timeStart || "00:00"),
         );
+      
       const query = (window._itinSearchQuery || "").toLowerCase().trim();
+      let hasMatch = false;
       if (query) {
-        dayEvents = dayEvents.filter((e) => 
+        hasMatch = allDayEvents.some((e) => 
           (e.title || "").toLowerCase().includes(query) ||
           (e.location || "").toLowerCase().includes(query) ||
           (e.note || "").toLowerCase().includes(query) ||
@@ -3847,15 +3854,17 @@ function renderItinerary(resetPagination) {
           (e.category || "").toLowerCase().includes(query) ||
           (e.tags || []).some(t => t.toLowerCase().includes(query))
         );
-        if (dayEvents.length === 0) return "";
+        if (!hasMatch) return "";
       }
+
+      const dayEvents = allDayEvents;
       const d = new Date(dateStr + "T12:00:00");
       const dayLabel = `Día ${idx + 1}`;
       const dateLabel = `${weekDays[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
       const isToday = dateStr === today;
       const isPast = dateStr < today;
       const eventsHtml = dayEvents
-        .map((ev) => renderItinEventCard(ev))
+        .map((ev) => renderItinEventCard(ev, query))
         .join("");
 
       window._itinDayStates = window._itinDayStates || {};
@@ -3996,7 +4005,16 @@ window.getDayRouteData = function (dateStr) {
   };
 }
 
-function renderItinEventCard(ev) {
+function renderItinEventCard(ev, query) {
+  const isMatch = query && (
+    (ev.title || "").toLowerCase().includes(query) ||
+    (ev.location || "").toLowerCase().includes(query) ||
+    (ev.note || "").toLowerCase().includes(query) ||
+    (ev.details || "").toLowerCase().includes(query) ||
+    (ev.category || "").toLowerCase().includes(query) ||
+    (ev.tags || []).some(t => t.toLowerCase().includes(query))
+  );
+
   const tagHtml = (ev.tags || [])
     .map((tag) => {
       const tagMap = {
@@ -4042,7 +4060,7 @@ function renderItinEventCard(ev) {
   const itinIcons = { Visita: "🏛️", Comida: "🍽️", Alojamiento: "🏠", Vuelo: "✈️", Tren: "🚂", Teleférico: "🚠", Moto: "🛵", Barco: "🚢", Bici: "🚲", Auto: "🚗", Actividad: "🎯", Otro: "📌" };
   const evIcon = ev.icon || itinIcons[ev.category] || "📌";
 
-  return `<div class="itin-event" data-id="${ev.id}">
+  return `<div class="itin-event ${isMatch ? 'highlighted' : ''}" data-id="${ev.id}">
         <div class="itin-item-drag-handle" title="Arrastrar para reordenar">☰</div>
         <div class="itin-timeline">
           <div class="itin-time">${ev.timeStart || "—"}</div>
@@ -4093,6 +4111,246 @@ function itinLoadPrev() {
   renderItineraryFromStart();
 }
 
+window.openDaySelector = function() {
+  if (!currentTrip) return;
+  const allDays = getDaysBetween(currentTrip.startDate, currentTrip.endDate);
+  const container = document.getElementById('day-selector-grid');
+  if (!container) return;
+  const today = new Date().toISOString().split('T')[0];
+  
+  const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  
+  container.innerHTML = allDays.map((dateStr, idx) => {
+    const d = new Date(dateStr + "T12:00:00");
+    const isToday = dateStr === today;
+    return `
+      <div class="day-btn ${isToday ? 'is-today' : ''}" onclick="jumpToDay('${dateStr}')">
+        <span class="day-btn-num">Día ${idx + 1}</span>
+        <span class="day-btn-date">${d.getDate()}</span>
+        <span class="day-btn-month">${months[d.getMonth()]}</span>
+      </div>
+    `;
+  }).join('');
+  
+  openModal('day-selector-modal');
+};
+
+window.jumpToDay = function(dateStr) {
+  closeModal('day-selector-modal');
+  
+  if (!currentTrip) return;
+  const allDays = getDaysBetween(currentTrip.startDate, currentTrip.endDate);
+  const idx = allDays.indexOf(dateStr);
+  if (idx === -1) return;
+  
+  const today = new Date().toISOString().split("T")[0];
+  const todayIdx = allDays.indexOf(today);
+  
+  // Si el día es anterior a hoy, forzamos mostrar desde el inicio
+  if (idx < todayIdx) {
+    window._itinShowFromStart = true;
+  }
+  
+  // Aseguramos que el rango de días visibles incluya el seleccionado
+  const neededVisible = window._itinShowFromStart ? idx + 1 : (idx - todayIdx + 1);
+  if (neededVisible > itinVisibleDays) {
+    itinVisibleDays = neededVisible + 2;
+  }
+  
+  if (window._itinShowFromStart) renderItineraryFromStart(); else renderItinerary();
+  
+  // Scroll suave al día seleccionado
+  setTimeout(() => {
+    const el = document.getElementById(`itin-day-${dateStr}`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      // Si estaba colapsado, lo expandimos para que vea las actividades
+      if (el.classList.contains('collapsed')) {
+        toggleItinDay(dateStr);
+      }
+      // Pequeño efecto visual de feedback
+      el.style.transition = 'box-shadow 0.5s';
+      el.style.boxShadow = '0 0 20px var(--accent2)';
+      setTimeout(() => el.style.boxShadow = '', 1500);
+    }
+  }, 400);
+};
+
+
+
+window.exportItineraryToPDF = async function() {
+  if (!currentTrip) return;
+  toast("Generando PDF profesional... ⏳");
+  
+  const allDays = getDaysBetween(currentTrip.startDate, currentTrip.endDate);
+  const events = window._itinEvents || [];
+  
+  const printDiv = document.createElement('div');
+  printDiv.id = 'pdf-export-temp';
+  printDiv.style.position = 'absolute';
+  printDiv.style.left = '-9999px';
+  printDiv.style.top = '0';
+  printDiv.style.zIndex = '9999';
+  printDiv.style.width = '800px'; 
+  printDiv.style.display = 'block';
+  printDiv.style.background = '#fff';
+  printDiv.style.color = '#000';
+  printDiv.style.fontFamily = "'DM Sans', sans-serif";
+  
+  const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  const weekDays = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];
+
+  const styleHtml = `
+    <style>
+      * { box-sizing: border-box !important; }
+      .pdf-day-block {
+        page-break-before: always;
+        padding-top: 5px;
+        display: block;
+        width: 100%;
+      }
+      .pdf-day-block:first-child {
+        page-break-before: avoid;
+      }
+      .pdf-event-card {
+        page-break-inside: avoid !important;
+        break-inside: avoid-page !important;
+        display: flex;
+        gap: 15px;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 10px;
+        border: 1px solid #eee;
+        margin-bottom: 15px;
+      }
+      .pdf-day-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+        border-left: 4px solid #5b8cf7;
+        padding-left: 15px;
+        page-break-after: avoid !important;
+      }
+    </style>
+  `;
+
+  let headerHtml = `
+    <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #eee; padding-bottom: 30px;">
+      <h1 style="font-size: 32px; margin-bottom: 10px; color: #1a1a1a;">✈️ Itinerario: ${currentTrip.name}</h1>
+      <p style="font-size: 16px; color: #666; margin-bottom: 15px;">${currentTrip.description || ''}</p>
+      <div style="display: flex; justify-content: center; gap: 20px; font-weight: 600; color: #333;">
+        <span>📅 Inicio: ${formatDate(currentTrip.startDate)}</span>
+        <span>🏁 Fin: ${formatDate(currentTrip.endDate)}</span>
+      </div>
+    </div>
+  `;
+
+  if (currentTrip.coverUrl) {
+    headerHtml = `
+      <div style="width: 100%; height: 220px; border-radius: 12px; overflow: hidden; margin-bottom: 30px;">
+        <img src="${currentTrip.coverUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+    ` + headerHtml;
+  }
+
+  let bodyHtml = '';
+  allDays.forEach((dateStr, idx) => {
+    const dayEvents = events
+      .filter((e) => e.date === dateStr)
+      .sort((a, b) => (a.timeStart || "00:00").localeCompare(b.timeStart || "00:00"));
+
+    const d = new Date(dateStr + "T12:00:00");
+    const dateLabel = `${weekDays[d.getDay()]}, ${d.getDate()} de ${months[d.getMonth()]}`;
+
+    bodyHtml += `
+      <div class="pdf-day-block">
+        <div class="pdf-day-header">
+          <h2 style="margin: 0; font-size: 24px;">Día ${idx + 1}</h2>
+          <span style="color: #888; font-size: 16px;">— ${dateLabel}</span>
+        </div>
+        
+        <div style="display: block;">
+          ${dayEvents.length > 0 ? dayEvents.map(ev => {
+            const itinIcons = { Visita: "🏛️", Comida: "🍽️", Alojamiento: "🏠", Vuelo: "✈️", Tren: "🚂", Teleférico: "🚠", Moto: "🛵", Barco: "🚢", Bici: "🚲", Auto: "🚗", Actividad: "🎯", Otro: "📌" };
+            const evIcon = ev.icon || itinIcons[ev.category] || "📌";
+            return `
+              <div class="pdf-event-card">
+                <div style="font-size: 22px; width: 44px; height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center; background: #fff; border-radius: 10px; border: 1px solid #eee;">${evIcon}</div>
+                <div style="flex: 1;">
+                  <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 6px;">
+                    <strong style="font-size: 17px; color: #1a1a1a;">${ev.title}</strong>
+                    <span style="font-size: 14px; font-weight: 700; color: #5b8cf7; white-space: nowrap;">${ev.timeStart || '—'}</span>
+                  </div>
+                  ${ev.location ? `<div style="font-size: 14px; color: #666; margin-bottom: 6px;">📍 ${ev.location}</div>` : ''}
+                  ${ev.note ? `<div style="font-size: 14px; color: #444; font-style: italic; background: #fff; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 3px solid #5b8cf7;">"${ev.note}"</div>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('') : '<p style="color: #999; font-style: italic; font-size: 15px; padding-left: 20px;">Sin actividades programadas</p>'}
+        </div>
+      </div>
+    `;
+  });
+
+  const footerHtml = `
+    <div style="text-align: center; margin-top: 50px; color: #aaa; font-size: 13px; border-top: 1px solid #eee; padding-top: 25px;">
+      Generado por Viajeros App · Gastos compartidos sin drama
+    </div>
+  `;
+
+  printDiv.innerHTML = styleHtml + headerHtml + bodyHtml + footerHtml;
+  document.body.appendChild(printDiv);
+  
+  const opt = {
+    margin: 15,
+    filename: `Itinerario_${(currentTrip.name || 'Viaje').replace(/\s+/g, '_')}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { 
+      scale: 2, 
+      useCORS: true, 
+      logging: false, 
+      letterRendering: false,
+      allowTaint: false
+    },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+  };
+
+  try {
+    const images = printDiv.getElementsByTagName('img');
+    const imagePromises = Array.from(images).map(img => {
+      if (img.complete) return Promise.resolve();
+      return new Promise(resolve => { img.onload = img.onerror = resolve; });
+    });
+    
+    await Promise.all([...imagePromises, document.fonts.ready]);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // RAÍZ: En lugar de capturar un elemento del DOM que puede tener conflictos,
+    // pasamos el HTML como string. La librería crea un entorno limpio.
+    const htmlContent = `
+      <div style="background: #fff; width: 100%; font-family: 'DM Sans', sans-serif;">
+        ${styleHtml}
+        ${headerHtml}
+        ${bodyHtml}
+        ${footerHtml}
+      </div>
+    `;
+
+    await html2pdf().from(htmlContent).set(opt).save();
+    
+    toast("¡PDF descargado con éxito! 🎉");
+  } catch (error) {
+    console.error("Error PDF:", error);
+    toast("Error al generar PDF");
+  } finally {
+    if (document.body.contains(printDiv)) {
+      document.body.removeChild(printDiv);
+    }
+  }
+};
+
 function renderItineraryFromStart() {
   if (!currentTrip) return;
   const allDays = getDaysBetween(currentTrip.startDate, currentTrip.endDate);
@@ -4124,7 +4382,7 @@ function renderItineraryFromStart() {
     `Día ${Math.min(passedDays, totalDays)} de ${totalDays}`;
   document.getElementById("itin-controls").style.display = "flex";
   const sc3 = document.getElementById("itin-search-container");
-  if(sc3) sc3.style.display = "block";
+  if(sc3) sc3.style.display = "flex";
 
   const visibleDays = allDays.slice(0, itinVisibleDays);
   const hasMore = itinVisibleDays < allDays.length;
@@ -4132,14 +4390,16 @@ function renderItineraryFromStart() {
 
   const daysHtml = visibleDays
     .map((dateStr, idx) => {
-      let dayEvents = events
+      const allDayEvents = events
         .filter((e) => e.date === dateStr)
         .sort((a, b) =>
           (a.timeStart || "00:00").localeCompare(b.timeStart || "00:00"),
         );
+
       const query = (window._itinSearchQuery || "").toLowerCase().trim();
+      let hasMatch = false;
       if (query) {
-        dayEvents = dayEvents.filter((e) => 
+        hasMatch = allDayEvents.some((e) => 
           (e.title || "").toLowerCase().includes(query) ||
           (e.location || "").toLowerCase().includes(query) ||
           (e.note || "").toLowerCase().includes(query) ||
@@ -4147,15 +4407,17 @@ function renderItineraryFromStart() {
           (e.category || "").toLowerCase().includes(query) ||
           (e.tags || []).some(t => t.toLowerCase().includes(query))
         );
-        if (dayEvents.length === 0) return "";
+        if (!hasMatch) return "";
       }
+
+      const dayEvents = allDayEvents;
       const d = new Date(dateStr + "T12:00:00");
       const dayLabel = `Día ${idx + 1}`;
       const dateLabel = `${weekDays[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
       const isToday = dateStr === today;
       const isPast = dateStr < today;
       const eventsHtml = dayEvents
-        .map((ev) => renderItinEventCard(ev))
+        .map((ev) => renderItinEventCard(ev, query))
         .join("");
       
       window._itinDayStates = window._itinDayStates || {};
@@ -5487,3 +5749,24 @@ window.addEventListener("scroll", () => {
     scrollTopBtn.classList.remove("visible");
   }
 }, { passive: true });
+
+/**
+ * Actualiza el indicador de conexión online/offline
+ */
+function updateOnlineStatus() {
+  const banner = document.getElementById("offline-banner");
+  if (!banner) return;
+  
+  if (navigator.onLine) {
+    banner.classList.remove("visible");
+    setTimeout(() => { banner.style.display = "none"; }, 300);
+  } else {
+    banner.style.display = "flex";
+    setTimeout(() => { banner.classList.add("visible"); }, 10);
+  }
+}
+
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+// Ejecutar al inicio por si ya está offline
+setTimeout(updateOnlineStatus, 2000);

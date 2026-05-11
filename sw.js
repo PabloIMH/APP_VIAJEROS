@@ -1,11 +1,16 @@
-const CACHE_NAME = 'viajeros-v3';
+const CACHE_NAME = 'viajeros-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './css/style.css',
+  './css/map.css',
   './css/pages/auth.css',
+  './css/pages/itinerary.css',
+  './css/pages/gallery.css',
   './js/main.js',
-  './img/apple-touch-icon-sinfondo.png'
+  './js/map.js',
+  './img/apple-touch-icon-sinfondo.png',
+  'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'
 ];
 
 self.addEventListener('install', (event) => {
@@ -23,7 +28,6 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         cacheNames.map((name) => {
           if (name !== CACHE_NAME) {
-            console.log('Borrando caché antigua:', name);
             return caches.delete(name);
           }
         })
@@ -34,10 +38,33 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Red de primero, si falla caché (para desarrollo y evitar estos problemas)
+  // No cachear peticiones de Firestore (Firestore tiene su propia persistencia)
+  if (event.request.url.includes('firestore.googleapis.com') || 
+      event.request.url.includes('firebase')) {
+    return;
+  }
+
   event.respondWith(
-    fetch(event.request).catch(() => {
-      return caches.match(event.request);
-    })
+    fetch(event.request)
+      .then((response) => {
+        // Cachear las respuestas exitosas de assets
+        if (response.status === 200 && (
+            event.request.url.includes('.css') || 
+            event.request.url.includes('.js') || 
+            event.request.url.includes('.png') ||
+            event.request.url.includes('fonts.googleapis.com') ||
+            event.request.url.includes('unpkg.com') ||
+            event.request.url.includes('cdnjs.cloudflare.com')
+        )) {
+          const cacheCopy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, cacheCopy);
+          });
+        }
+        return response;
+      })
+      .catch(() => {
+        return caches.match(event.request);
+      })
   );
 });

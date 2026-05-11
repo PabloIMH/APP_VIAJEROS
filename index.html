@@ -40,11 +40,19 @@
   <!-- Map Specific CSS -->
   <link rel="stylesheet" href="css/map.css" />
   <link rel="stylesheet" href="css/components/itinerary_controls.css" />
+
+
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
 </head>
 
 <body>
+  <!-- OFFLINE BANNER -->
+  <div id="offline-banner" class="offline-banner" style="display: none;">
+    <i class="ph ph-wifi-slash"></i>
+    <span>Estás en modo sin conexión. Algunos datos podrían no estar actualizados.</span>
+  </div>
+
   <!-- Skip navigation for accessibility -->
   <a href="#main-content" class="skip-link">Saltar al contenido principal</a>
 
@@ -403,6 +411,7 @@
                 <span class="sidebar-icon">📸</span> Galería
                 <span class="sidebar-active-bar"></span>
               </button>
+
               <div class="sidebar-sep"></div>
               <button class="trip-sidebar-btn" id="trip-action-btn"
                 onclick="deleteTrip(currentTripId, currentTrip.name)" style="color: var(--danger)">
@@ -591,11 +600,29 @@
                 </div>
               </div>
 
-              <!-- BOTONES DE CONTROL DE ITINERARIO (Expandir/Contraer) -->
-              <div class="itin-search-container" id="itin-search-container" style="display: none; position: relative; margin-bottom: 12px; margin-top: 4px; padding: 0 4px;">
-                <span style="position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 1rem;">🔍</span>
-                <input type="text" id="itin-search-input" placeholder="Buscar actividad, lugar..." style="width: 100%; padding: 12px 12px 12px 40px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface2); color: var(--text); font-size: 0.88rem; transition: border 0.2s; outline: none;" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'" oninput="filterItinerary(this.value)">
+              <!-- BUSCADOR Y EXPORTAR PDF -->
+              <div id="itin-search-container" style="display: none; align-items: center; justify-content: center; gap: 10px; margin: 10px auto 16px; padding: 0 10px; max-width: 400px;">
+                <div style="flex: 1; position: relative;">
+                  <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 1rem;">🔍</span>
+                  <input type="text" id="itin-search-input" placeholder="Filtrar actividades..." 
+                    style="width: 100%; padding: 10px 10px 10px 36px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface2); color: var(--text); font-size: 0.88rem; transition: all 0.2s; outline: none;" 
+                    onfocus="this.style.borderColor='var(--accent)'; this.style.background='var(--surface3)'" 
+                    onblur="this.style.borderColor='var(--border)'; this.style.background='var(--surface2)'" 
+                    oninput="filterItinerary(this.value)">
+                </div>
+                <button class="itin-control-btn" onclick="exportItineraryToPDF()" 
+                  style="flex: 0 0 44px; height: 44px; padding: 0; min-width: 44px; border-radius: 12px; border-color: rgba(124,239,176,0.2); color: var(--accent3); background: var(--surface2); display: flex; align-items: center; justify-content: center;" 
+                  title="Exportar PDF Profesional">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                </button>
               </div>
+
               <div class="itin-controls" id="itin-controls" style="display: none;">
                 <button class="itin-control-btn" onclick="toggleAllItineraryDays(true)">
                   <svg class="itin-control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -605,7 +632,7 @@
                     <line x1="21" y1="3" x2="14" y2="10"></line>
                     <line x1="3" y1="21" x2="10" y2="14"></line>
                   </svg>
-                  <span>Expandir todo</span>
+                  <span>Expandir</span>
                 </button>
                 <button class="itin-control-btn" onclick="toggleAllItineraryDays(false)">
                   <svg class="itin-control-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -615,7 +642,11 @@
                     <line x1="14" y1="10" x2="21" y2="3"></line>
                     <line x1="10" y1="14" x2="3" y2="21"></line>
                   </svg>
-                  <span>Contraer todo</span>
+                  <span>Contraer</span>
+                </button>
+                <button class="itin-control-btn" onclick="openDaySelector()">
+                  <span style="font-size: 1.1rem;">📅</span>
+                  <span>Ir al día</span>
                 </button>
               </div>
 
@@ -654,6 +685,8 @@
                 </div>
               </div>
             </div>
+
+
           </div>
           <!-- /trip-content -->
         </div>
@@ -756,6 +789,8 @@
       </div>
     </div>
   </div>
+
+
 
   <!-- CONFIRM PAYMENT MODAL -->
   <div class="modal-overlay" id="confirm-pay-modal">
@@ -1682,6 +1717,7 @@
           <i class="ph-bold ph-image"></i>
           <span class="bnav-label">Fotos</span>
         </button>
+
       </div>
     </nav>
   </div>
@@ -1905,6 +1941,23 @@
     </div>
   </div>
 
+  <!-- DAY SELECTOR MODAL -->
+  <div class="modal-overlay" id="day-selector-modal">
+    <div class="modal" style="max-width: 450px;">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">📅 Seleccionar Día</h2>
+      <p style="color: var(--text3); font-size: 0.85rem; margin-bottom: 16px;">Salta directamente a cualquier día del viaje</p>
+      <div class="day-selector-grid" id="day-selector-grid">
+        <!-- Generado dinámicamente -->
+      </div>
+      <div style="margin-top: 20px;">
+        <button class="btn btn-ghost" style="width: 100%;" onclick="closeModal('day-selector-modal')">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST -->
   <div class="toast" id="toast" role="alert" aria-live="polite"></div>
 
@@ -1925,6 +1978,8 @@
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <!-- Sortable JS -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <!-- html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
   <!-- FIREBASE SDK -->
   <script type="module" src="js/main.js"></script>
