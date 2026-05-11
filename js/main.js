@@ -104,7 +104,7 @@ window.saveExpense = saveExpense;
 window.claimPayment = claimPayment;
 window.confirmPayment = confirmPayment;
 window.addNote = addNote;
-window.copyCode = copyCode;
+window.copyInviteCode = copyInviteCode;
 window.openAddExpense = openAddExpense;
 window.deleteTrip = deleteTrip;
 window.approveDeletion = approveDeletion;
@@ -3707,9 +3707,11 @@ function subscribeNotes() {
   unsubscribeNotes = onSnapshot(q, (snap) => {
     const notes = [];
     snap.forEach((d) => notes.push({ id: d.id, ...d.data() }));
-    notes.sort(
-      (a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0),
-    );
+    notes.sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1;
+      if (!a.pinned && b.pinned) return 1;
+      return (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0);
+    });
     const container = document.getElementById("notes-list");
     if (!notes.length) {
       container.innerHTML = `<div class="empty-state"><div class="empty-icon">📝</div><p>Sin notas aún</p></div>`;
@@ -3718,19 +3720,68 @@ function subscribeNotes() {
     container.innerHTML = notes
       .map(
         (n) => `
-          <div class="note-card">
-            <div class="note-author">
-              <div class="avatar mavatar-${n.authorId}" style="width:28px;height:28px;font-size:0.75rem">${window.memberPhotoUrls[n.authorId] ? `<img src="${window.memberPhotoUrls[n.authorId]}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : (n.authorName || "?")[0].toUpperCase()}</div>
-              <strong style="font-size:0.9rem">${n.authorName}</strong>
-              <span class="text-muted">${n.date || ""}</span>
+          <div class="note-card ${n.done ? "done" : ""} ${n.pinned ? "pinned" : ""}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+              <div class="note-author">
+                <div class="avatar mavatar-${n.authorId}" style="width:28px;height:28px;font-size:0.75rem">${window.memberPhotoUrls[n.authorId] ? `<img src="${window.memberPhotoUrls[n.authorId]}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">` : (n.authorName || "?")[0].toUpperCase()}</div>
+                <div>
+                  <div style="font-size:0.9rem; font-weight:600; line-height:1">${n.authorName}${n.pinned ? ' <span style="color:var(--accent); font-size:0.7rem">📌 Fijo</span>' : ""}</div>
+                  <div style="font-size:0.72rem; color:var(--text3); margin-top:2px">${n.date || ""}</div>
+                </div>
+              </div>
+              <div class="note-actions">
+                <button class="btn-pin-note ${n.pinned ? "active" : ""}" onclick="toggleNotePin('${n.id}', ${!!n.pinned})" title="Fijar nota">
+                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"></path><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6a3 3 0 0 0-3-3 3 3 0 0 0-3 3z"></path></svg>
+                </button>
+                <button class="btn-delete-note" onclick="deleteNote('${n.id}')" title="Eliminar nota">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                </button>
+                <label class="note-check-wrapper">
+                  <input type="checkbox" class="note-check" ${n.done ? "checked" : ""} onchange="toggleNoteDone('${n.id}', ${!!n.done})">
+                  <span class="note-checkmark"></span>
+                </label>
+              </div>
             </div>
-            <p style="font-size:0.95rem;line-height:1.6;color:var(--text)">${n.content}</p>
+            <p style="font-size:0.95rem; line-height:1.6; color:var(--text); margin:0">${n.content}</p>
           </div>
         `,
       )
       .join("");
   });
 }
+
+window.toggleNoteDone = async function (noteId, currentStatus) {
+  try {
+    const noteRef = doc(db, "trips", currentTripId, "notes", noteId);
+    await updateDoc(noteRef, { done: !currentStatus });
+  } catch (e) {
+    console.error("Error updating note:", e);
+    toast("Error al actualizar nota");
+  }
+};
+
+window.toggleNotePin = async function (noteId, currentStatus) {
+  try {
+    const noteRef = doc(db, "trips", currentTripId, "notes", noteId);
+    await updateDoc(noteRef, { pinned: !currentStatus });
+    toast(!currentStatus ? "Nota fijada 📌" : "Nota desfijada");
+  } catch (e) {
+    console.error("Error pinning note:", e);
+    toast("Error al fijar nota");
+  }
+};
+
+window.deleteNote = async function (noteId) {
+  if (!confirm("¿Estás seguro de eliminar esta nota?")) return;
+  try {
+    const noteRef = doc(db, "trips", currentTripId, "notes", noteId);
+    await deleteDoc(noteRef);
+    toast("Nota eliminada");
+  } catch (e) {
+    console.error("Error deleting note:", e);
+    toast("Error al eliminar nota");
+  }
+};
 
 async function addNote() {
   const content = document.getElementById("note-input").value.trim();
@@ -3741,6 +3792,7 @@ async function addNote() {
     authorName: currentUser.displayName || currentUser.email,
     date: new Date().toLocaleDateString("es-CL"),
     createdAt: serverTimestamp(),
+    done: false,
   });
   document.getElementById("note-input").value = "";
   toast("Nota publicada ✓");
@@ -5161,10 +5213,12 @@ window.openModal = function (id) {
   document.getElementById(id).classList.add("show");
 };
 
-function copyCode() {
-  navigator.clipboard.writeText(currentTrip?.code || "");
+function copyInviteCode() {
+  const code = currentTrip?.code || "";
+  navigator.clipboard.writeText(code);
   toast("Código copiado! 📋");
 }
+window.copyInviteCode = copyInviteCode;
 function openModal(id) {
   document.getElementById(id).classList.add("show");
 }
@@ -5204,6 +5258,8 @@ function formatAmount(n, currency) {
   if (currency === "CLP") return "$" + num.toLocaleString("es-CL");
   if (currency === "EUR")
     return "€" + num.toLocaleString("es-ES", { minimumFractionDigits: 0 });
+  if (currency === "CHF")
+    return "CHF " + num.toLocaleString("de-CH", { minimumFractionDigits: 0 });
   return currency + " " + num.toLocaleString("en-US");
 }
 

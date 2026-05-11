@@ -768,6 +768,7 @@
           <option value="CLP">CLP — Peso Chileno</option>
           <option value="EUR">EUR — Euro</option>
           <option value="USD">USD — Dólar</option>
+          <option value="CHF">CHF — Franco Suizo</option>
           <option value="ARS">ARS — Peso Argentino</option>
         </select>
       </div>
@@ -840,9 +841,10 @@
           <label>Monto</label>
           <div style="display: flex; gap: 6px">
             <select id="exp-currency" style="width: 76px; flex-shrink: 0" onchange="onExpCurrencyChange()">
-              <option value="CLP">CLP</option>
-              <option value="EUR">EUR</option>
-              <option value="USD">USD</option>
+                <option value="CLP">CLP</option>
+                <option value="EUR">EUR</option>
+                <option value="USD">USD</option>
+                <option value="CHF">CHF</option>
             </select>
             <input type="number" id="exp-amount" placeholder="0" min="0" style="flex: 1; min-width: 0;" oninput="onAmountInput()" />
           </div>
@@ -1286,6 +1288,7 @@
             <option value="CLP">CLP — Peso</option>
             <option value="EUR">EUR — Euro</option>
             <option value="USD">USD — Dólar</option>
+            <option value="CHF">CHF — Franco Suizo</option>
           </select>
         </div>
         <div id="share-conversion-box" style="

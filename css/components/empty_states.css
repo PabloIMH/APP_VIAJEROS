@@ -9,8 +9,108 @@
     .invite-code { font-family: monospace; font-size: 1.2rem; letter-spacing: 3px; color: var(--accent); font-weight: 700; }
 
     /* ─── NOTES ─── */
-    .note-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 12px; }
-    .note-card .note-author { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+    .note-card { 
+      background: var(--surface); 
+      border: 1px solid var(--border); 
+      border-radius: 16px; 
+      padding: 18px 24px; 
+      margin-bottom: 16px; 
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+      position: relative; 
+      border-left: 4px solid transparent;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    }
+    .note-card:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+      border-color: var(--border-hover);
+    }
+    .note-card.done { 
+      background: rgba(124, 239, 176, 0.03); 
+      border-color: rgba(124, 239, 176, 0.1); 
+      border-left-color: var(--accent3); 
+      box-shadow: none;
+    }
+    .note-card.done:hover {
+      border-color: rgba(124, 239, 176, 0.3);
+    }
+    .note-card.done p { opacity: 0.5; text-decoration: line-through; color: var(--text3); filter: blur(0.2px); }
+    .note-card .note-author { display: flex; align-items: center; gap: 12px; }
+    
+    /* Custom Checkbox Pro */
+    .note-check-wrapper { position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+    .note-check { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+    .note-checkmark { 
+      height: 24px; 
+      width: 24px; 
+      background: var(--surface2); 
+      border: 2px solid var(--border); 
+      border-radius: 50%; 
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+    }
+    .note-check-wrapper:hover .note-checkmark { border-color: var(--accent3); transform: scale(1.1); }
+    .note-check:checked ~ .note-checkmark { background: var(--accent3); border-color: var(--accent3); box-shadow: 0 0 12px rgba(124, 239, 176, 0.3); }
+    .note-checkmark:after { content: ""; display: none; width: 6px; height: 11px; border: solid white; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); margin-top: -2px; }
+    .note-check:checked ~ .note-checkmark:after { display: block; }
+    
+    .note-actions { display: flex; align-items: center; gap: 8px; }
+    .btn-delete-note { 
+      background: rgba(240, 120, 120, 0.1); 
+      border: 1px solid rgba(240, 120, 120, 0.2);
+      color: #f07878; 
+      cursor: pointer; 
+      width: 28px;
+      height: 28px;
+      border-radius: 8px; 
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .btn-delete-note:hover { 
+      background: #f07878; 
+      color: white; 
+      border-color: #f07878;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(240, 120, 120, 0.4);
+    }
+    .btn-delete-note:active { transform: scale(0.92); }
+    
+    .btn-pin-note { 
+      background: rgba(91, 140, 247, 0.1); 
+      border: 1px solid rgba(91, 140, 247, 0.2);
+      color: #5b8cf7; 
+      cursor: pointer; 
+      width: 28px;
+      height: 28px;
+      border-radius: 8px; 
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .btn-pin-note.active {
+      background: #5b8cf7;
+      color: white;
+      border-color: #5b8cf7;
+    }
+    .btn-pin-note:hover { 
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(91, 140, 247, 0.4);
+    }
+    .btn-pin-note:active { transform: scale(0.92); }
+
+    .note-card.pinned {
+      border-left: 4px solid var(--accent) !important;
+      background: rgba(232, 201, 122, 0.03);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
 
     
     /* ─── LOADER ─── */
