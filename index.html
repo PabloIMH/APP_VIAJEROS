@@ -44,6 +44,13 @@
 
   <!-- Phosphor Icons -->
   <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <!-- Uploadcare -->
+  <script>
+    UPLOADCARE_PUBLIC_KEY = 'd51553ec954ca8111b85'; // User API Key
+    UPLOADCARE_LOCALE = 'es';
+    UPLOADCARE_TABS = 'file url facebook gdrive gphotos';
+  </script>
+  <script src="https://ucarecdn.com/libs/widget/3.x/uploadcare.full.min.js"></script>
 </head>
 
 <body>
@@ -407,6 +414,10 @@
                 <span class="sidebar-icon">🗺️</span> Itinerario
                 <span class="sidebar-active-bar"></span>
               </button>
+              <button class="trip-sidebar-btn" id="sb-documents" onclick="switchTab('documents')">
+                <span class="sidebar-icon">📂</span> Documentos
+                <span class="sidebar-active-bar"></span>
+              </button>
               <button class="trip-sidebar-btn" id="sb-gallery" onclick="switchTab('gallery')">
                 <span class="sidebar-icon">📸</span> Galería
                 <span class="sidebar-active-bar"></span>
@@ -664,27 +675,50 @@
               </div>
             </div>
 
-            <!-- GALLERY -->
-            <div class="section-panel" id="panel-gallery">
-              <div class="gallery-stats" id="gallery-stats" style="display: none">
-                <div class="gallery-stat-pill">
-                  📸 <strong id="gallery-photo-count">0</strong>
-                  fotos
+              <!-- GALLERY -->
+              <div class="section-panel" id="panel-gallery">
+                <div class="gallery-stats" id="gallery-stats" style="display: none">
+                  <div class="gallery-stat-pill">
+                    📸 <strong id="gallery-photo-count">0</strong>
+                    fotos
+                  </div>
+                  <div class="gallery-stat-pill">
+                    📅 <strong id="gallery-day-count">0</strong>
+                    días con
+                    recuerdos
+                  </div>
                 </div>
-                <div class="gallery-stat-pill">
-                  📅 <strong id="gallery-day-count">0</strong>
-                  días con
-                  recuerdos
+                <div id="gallery-content">
+                  <div class="gallery-empty">
+                    <div class="gallery-empty-icon">🖼️</div>
+                    <p>La galería está vacía</p>
+                    <small>Toca + para agregar las primeras fotos del viaje</small>
+                  </div>
                 </div>
               </div>
-              <div id="gallery-content">
-                <div class="gallery-empty">
-                  <div class="gallery-empty-icon">🖼️</div>
-                  <p>La galería está vacía</p>
-                  <small>Toca + para agregar las primeras fotos del viaje</small>
+
+              <!-- DOCUMENTS -->
+              <div class="section-panel" id="panel-documents">
+                <!-- BUSCADOR -->
+                <div id="doc-search-container" style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 10px auto 16px; padding: 0 10px; max-width: 400px;">
+                  <div style="flex: 1; position: relative;">
+                    <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 1rem;">🔍</span>
+                    <input type="text" id="doc-search-input" placeholder="Filtrar documentos..." 
+                      style="width: 100%; padding: 10px 10px 10px 36px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface2); color: var(--text); font-size: 0.88rem; transition: all 0.2s; outline: none;" 
+                      onfocus="this.style.borderColor='var(--accent)'; this.style.background='var(--surface3)'" 
+                      onblur="this.style.borderColor='var(--border)'; this.style.background='var(--surface2)'" 
+                      oninput="filterDocuments(this.value)">
+                  </div>
+                </div>
+
+                <div id="documents-content">
+                  <div class="documents-empty">
+                    <div class="documents-empty-icon">📂</div>
+                    <p>No hay documentos aún</p>
+                    <small>Sube tus pasajes, pases de tren o entradas aquí</small>
+                  </div>
                 </div>
               </div>
-            </div>
 
 
           </div>
@@ -793,7 +827,71 @@
 
 
 
-  <!-- CONFIRM PAYMENT MODAL -->
+  <!-- ADD DOCUMENT MODAL -->
+  <div class="modal-overlay" id="add-document-modal">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <h2 class="modal-title">Subir Documento 📄</h2>
+      
+      <!-- Visibilidad -->
+      <div class="type-selector" style="margin-bottom: 20px;">
+        <button type="button" class="type-btn active" id="doc-type-shared" onclick="selectDocType('shared')">
+          <span class="type-icon">👥</span>
+          Compartido
+        </button>
+        <button type="button" class="type-btn" id="doc-type-personal" onclick="selectDocType('personal')">
+          <span class="type-icon">🔒</span>
+          Personal
+        </button>
+      </div>
+
+      <div class="form-group">
+        <label>Nombre del documento</label>
+        <input type="text" id="doc-name-input" placeholder="Ej: Ticket de tren a Roma..." />
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label>Día asociado (opcional)</label>
+          <select id="doc-day-select"></select>
+        </div>
+        <div class="form-group">
+          <label>Categoría</label>
+          <select id="doc-cat-select">
+            <option value="Pasaje Avión">✈️ Pasaje Avión</option>
+            <option value="Pasaje Tren">🚂 Pasaje Tren</option>
+            <option value="Pasaje Bus">🚌 Pasaje Bus</option>
+            <option value="Reserva Alojamiento">🏠 Alojamiento</option>
+            <option value="Ticket/Entrada">🎫 Ticket/Entrada</option>
+            <option value="Tour/Actividad">🗺️ Tour/Actividad</option>
+            <option value="Seguro/Póliza">🛡️ Seguro Médico</option>
+            <option value="Comprobante/Factura">🧾 Comprobante</option>
+            <option value="Documento Identidad">🛂 Identidad</option>
+            <option value="Otro" selected>📦 Otro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Archivo</label>
+        <div style="margin-top: 8px">
+          <input type="hidden" role="uploadcare-uploader" id="doc-file-url" 
+                 data-public-key="d51553ec954ca8111b85" 
+                 data-tabs="file url facebook gdrive gphotos"
+                 data-images-only="false" />
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 20px">
+        <button class="btn btn-ghost" style="flex: 1" onclick="closeModal('add-document-modal')">
+          Cancelar
+        </button>
+        <button class="btn btn-primary" style="flex: 1" onclick="saveDocument()">
+          Guardar documento
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="modal-overlay" id="confirm-pay-modal">
     <div class="modal" style="max-width: 380px; text-align: center;">
       <div class="modal-handle"></div>
@@ -1715,6 +1813,10 @@
         <button class="bnav-btn" id="bnav-itinerary" onclick="switchTabMobile('itinerary')">
           <i class="ph-bold ph-map-trifold"></i>
           <span class="bnav-label">Ruta</span>
+        </button>
+        <button class="bnav-btn" id="bnav-documents" onclick="switchTabMobile('documents')">
+          <i class="ph-bold ph-files"></i>
+          <span class="bnav-label">Docs</span>
         </button>
         <button class="bnav-btn" id="bnav-gallery" onclick="switchTabMobile('gallery')">
           <i class="ph-bold ph-image"></i>

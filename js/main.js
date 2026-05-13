@@ -49,6 +49,7 @@ let unsubscribeNotes = null;
 let unsubscribeNotifications = null;
 let unsubscribeItinerary = null;
 let unsubscribeGallery = null;
+let unsubscribeDocuments = null;
 let unsubscribeTrip = null;
 
 let unsubscribeGlobalNotifs = null;
@@ -169,6 +170,9 @@ window.deleteGalleryPhoto = deleteGalleryPhoto;
 window.openGalleryLightbox = openGalleryLightbox;
 window.galleryLbNav = galleryLbNav;
 window.closeGalleryLightbox = closeGalleryLightbox;
+window.openAddDocument = openAddDocument;
+window.saveDocument = saveDocument;
+window.deleteDocument = deleteDocument;
 window.openGoogleMaps = openGoogleMaps;
 
 window.toggleUserMenu = toggleUserMenu;
@@ -1133,6 +1137,7 @@ async function openTripView(tripId) {
 
   subscribeItinerary();
   subscribeGallery();
+  subscribeDocuments();
 
   // Now that the trip subscriptions are set, enable the FAB and default tab
   document.getElementById("bottom-nav").style.display = "block";
@@ -1192,7 +1197,10 @@ function goHome() {
     unsubscribeGallery();
     unsubscribeGallery = null;
   }
-
+  if (unsubscribeDocuments) {
+    unsubscribeDocuments();
+    unsubscribeDocuments = null;
+  }
 
   currentTripId = null;
   window.currentTripId = null;
@@ -1209,7 +1217,7 @@ function switchTab(tab) {
   document.getElementById("panel-" + tab).classList.add("active");
 
   // Sync sidebar buttons
-  ["shared", "personal", "balance", "notes", "itinerary", "gallery"].forEach(
+  ["shared", "personal", "balance", "notes", "itinerary", "documents", "gallery"].forEach(
     (t) => {
       const btn = document.getElementById("sb-" + t);
       if (btn) btn.classList.toggle("active", t === tab);
@@ -1224,6 +1232,7 @@ function switchTab(tab) {
 
   if (tab === "balance") renderDashboard();
   if (tab === "itinerary") renderItinerary(true);
+  if (tab === "documents") renderDocuments(window._tripDocs || []);
   if (tab === "gallery") renderGallery();
 
 
@@ -1255,6 +1264,11 @@ function switchTab(tab) {
     fab.style.display = "flex";
     fab.title = "Agregar foto";
     fab.onclick = () => openAddPhoto();
+
+  } else if (tab === "documents") {
+    fab.style.display = "flex";
+    fab.title = "Subir documento";
+    fab.onclick = () => openAddDocument();
 
   } else {
 
@@ -3772,7 +3786,15 @@ window.toggleNotePin = async function (noteId, currentStatus) {
 };
 
 window.deleteNote = async function (noteId) {
-  if (!confirm("¿Estás seguro de eliminar esta nota?")) return;
+  const ok = await customConfirm({
+    icon: "📝",
+    title: "¿Eliminar nota?",
+    msg: "Esta nota se borrará permanentemente.",
+    okLabel: "Eliminar",
+    okClass: "btn-danger"
+  });
+
+  if (!ok) return;
   try {
     const noteRef = doc(db, "trips", currentTripId, "notes", noteId);
     await deleteDoc(noteRef);
@@ -5826,3 +5848,233 @@ window.addEventListener('online', updateOnlineStatus);
 window.addEventListener('offline', updateOnlineStatus);
 // Ejecutar al inicio por si ya está offline
 setTimeout(updateOnlineStatus, 2000);
+
+/**
+ * ─── DOCUMENTS MANAGEMENT ───
+ */
+
+function subscribeDocuments() {
+  if (unsubscribeDocuments) unsubscribeDocuments();
+  if (!currentTripId) return;
+
+  const q = query(
+    collection(db, "trips", currentTripId, "documents"),
+    orderBy("createdAt", "desc")
+  );
+  unsubscribeDocuments = onSnapshot(q, (snapshot) => {
+    const docs = [];
+    snapshot.forEach((d) => docs.push({ id: d.id, ...d.data() }));
+    window._tripDocs = docs;
+    renderDocuments(docs);
+  });
+}
+window.docFilterText = "";
+
+function filterDocuments(text) {
+  window.docFilterText = text ? text.toLowerCase() : "";
+  if (window._tripDocs) {
+    renderDocuments(window._tripDocs);
+  }
+}
+
+function selectDocType(type) {
+  window.currentDocType = type;
+  document.getElementById("doc-type-shared").classList.toggle("active", type === "shared");
+  document.getElementById("doc-type-personal").classList.toggle("active", type === "personal");
+}
+window.selectDocType = selectDocType;
+window.filterDocuments = filterDocuments;
+
+function getDayLabel(dayNum) {
+  if (!dayNum || dayNum === "Sin asignar") return "Sin asignar";
+  if (!currentTrip || !currentTrip.startDate) return `Día ${dayNum}`;
+  const allDays = getDaysBetween(currentTrip.startDate, currentTrip.endDate);
+  const dateStr = allDays[dayNum - 1];
+  if (!dateStr) return `Día ${dayNum}`;
+  
+  const d = new Date(dateStr + "T12:00:00");
+  const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+  return `Día ${dayNum} (${d.getDate()} ${months[d.getMonth()]})`;
+}
+
+function renderDocuments(docs = []) {
+  const container = document.getElementById("documents-content");
+  if (!container) return;
+
+  // Filter out personal documents that don't belong to the current user
+  let filteredDocs = docs.filter(d => {
+    const isPersonal = d.visibility === "personal";
+    if (isPersonal && d.createdBy !== currentUser.uid) {
+      return false;
+    }
+    return true;
+  });
+
+  // Filter by text search
+  if (window.docFilterText) {
+    filteredDocs = filteredDocs.filter(d => d.name.toLowerCase().includes(window.docFilterText));
+  }
+
+  if (filteredDocs.length === 0) {
+    container.innerHTML = `
+      <div class="documents-empty">
+        <div class="documents-empty-icon">📂</div>
+        <p>${window.docFilterText ? "No hay coincidencias" : "No hay documentos aún"}</p>
+        <small>${window.docFilterText ? "Intenta buscar con otras palabras" : "Sube tus pasajes, pases de tren o entradas aquí"}</small>
+      </div>
+    `;
+    return;
+  }
+
+  // Agrupar por día
+  const grouped = {};
+  filteredDocs.forEach(d => {
+    const day = d.day || "Sin asignar";
+    if (!grouped[day]) grouped[day] = [];
+    grouped[day].push(d);
+  });
+
+  let html = "";
+  Object.keys(grouped).sort((a, b) => {
+      if (a === "Sin asignar") return 1;
+      if (b === "Sin asignar") return -1;
+      return parseInt(a) - parseInt(b);
+  }).forEach(day => {
+    html += `
+      <div class="doc-day-group">
+        <h3 class="doc-day-title">${getDayLabel(day)}</h3>
+        <div class="doc-grid">
+          ${grouped[day].map(d => renderDocumentItem(d)).join("")}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function renderDocumentItem(doc) {
+  const isPDF = doc.url.toLowerCase().includes(".pdf") || doc.name.toLowerCase().includes("pdf");
+  const icon = isPDF ? "📄" : "📝";
+  const iconColor = isPDF ? "#ff4d4d" : "#4a90e2";
+  
+  const isPersonal = doc.visibility === "personal";
+  const category = doc.category || "Otro";
+  const day = doc.day;
+  
+  // Category Emoji
+  let catIcon = "📦";
+  if (category.includes("Avión") || category.includes("Vuelo")) catIcon = "✈️";
+  else if (category.includes("Tren")) catIcon = "🚂";
+  else if (category.includes("Bus")) catIcon = "🚌";
+  else if (category.includes("Alojamiento")) catIcon = "🏠";
+  else if (category.includes("Ticket") || category.includes("Entrada")) catIcon = "🎫";
+  else if (category.includes("Tour") || category.includes("Actividad")) catIcon = "🗺️";
+  else if (category.includes("Seguro") || category.includes("Póliza")) catIcon = "🛡️";
+  else if (category.includes("Comprobante") || category.includes("Factura")) catIcon = "🧾";
+  else if (category.includes("Identidad")) catIcon = "🛂";
+
+  return `
+    <div class="doc-card" onclick="window.open('${doc.url}', '_blank')">
+      <div class="doc-icon" style="background: ${iconColor}20; color: ${iconColor}">${icon}</div>
+      <div class="doc-info">
+        <div class="doc-name">
+          ${isPersonal ? '<span class="doc-personal-lock">🔒</span>' : ''}
+          ${doc.name}
+        </div>
+        <div class="doc-meta">
+          <span class="doc-cat-tag">
+            ${catIcon} ${category.replace(/.*\s/, '')}
+          </span>
+          ${day ? `<span class="doc-cat-tag">📅 ${getDayLabel(day)}</span>` : ''}
+          <span>${new Date(doc.createdAt).toLocaleDateString()}</span>
+        </div>
+      </div>
+      <button class="doc-delete-btn" onclick="event.stopPropagation(); deleteDocument('${doc.id}')">
+        <i class="ph ph-trash"></i>
+      </button>
+    </div>
+  `;
+}
+
+function openAddDocument() {
+  document.getElementById("doc-name-input").value = "";
+  
+  // Reset visibility and category
+  selectDocType("shared");
+  const catSelect = document.getElementById("doc-cat-select");
+  if (catSelect) catSelect.value = "Otro";
+
+  // Reset Uploadcare widget
+  const widget = uploadcare.Widget("#doc-file-url");
+  if (widget) widget.value(null);
+
+  // Llenar selector de días de forma robusta
+  const daySelect = document.getElementById("doc-day-select");
+  daySelect.innerHTML = '<option value="">Sin asignar</option>';
+  
+  if (currentTrip && currentTrip.startDate && currentTrip.endDate) {
+    const allDays = getDaysBetween(currentTrip.startDate, currentTrip.endDate);
+    allDays.forEach((d, index) => {
+        const dayNum = index + 1;
+        const opt = document.createElement("option");
+        opt.value = dayNum;
+        opt.textContent = getDayLabel(dayNum);
+        daySelect.appendChild(opt);
+    });
+  }
+
+  openModal("add-document-modal");
+}
+
+async function saveDocument() {
+  const name = document.getElementById("doc-name-input").value.trim();
+  const url = document.getElementById("doc-file-url").value;
+  const day = document.getElementById("doc-day-select").value;
+  const catSelect = document.getElementById("doc-cat-select");
+  const category = catSelect ? catSelect.value : "Otro";
+  const visibility = window.currentDocType || "shared";
+
+  if (!name || !url) {
+    toast("Por favor, ingresa un nombre y selecciona un archivo");
+    return;
+  }
+
+  showLoading("Guardando documento...");
+  try {
+    await addDoc(collection(db, "trips", currentTripId, "documents"), {
+      name,
+      url,
+      day,
+      category,
+      visibility,
+      createdAt: Date.now(),
+      createdBy: currentUser.uid
+    });
+    closeModal("add-document-modal");
+    toast("Documento guardado");
+  } catch (e) {
+    handleError(e, "guardar documento");
+  } finally {
+    hideLoading();
+  }
+}
+
+async function deleteDocument(docId) {
+  const ok = await customConfirm({
+    icon: "📄",
+    title: "¿Eliminar documento?",
+    msg: "Este archivo se eliminará permanentemente del viaje.",
+    okLabel: "Eliminar",
+    okClass: "btn-danger"
+  });
+
+  if (!ok) return;
+
+  try {
+    await deleteDoc(doc(db, "trips", currentTripId, "documents", docId));
+    toast("Documento eliminado");
+  } catch (e) {
+    handleError(e, "eliminar documento");
+  }
+}
