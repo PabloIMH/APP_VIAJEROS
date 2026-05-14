@@ -19,7 +19,7 @@
 
 .doc-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 12px;
 }
 
@@ -59,18 +59,24 @@
 .doc-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .doc-name {
   font-weight: 600;
   color: var(--text);
   font-size: 0.95rem;
-  white-space: nowrap;
+  margin-bottom: 4px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-bottom: 2px;
-  display: block; /* Ensure block for ellipsis */
-  width: 100%;    /* Force width for ellipsis */
+  white-space: normal;
+  word-break: break-word;
 }
 
 

@@ -5983,18 +5983,18 @@ function renderDocumentItem(doc) {
     : '<span class="visibility-tag shared">👥 Compartido</span>';
 
   return `
-    <div class="doc-card" onclick="window.open('${doc.url}', '_blank')">
+    <div class="doc-card" onclick="window.open('${doc.url}', '_blank')" title="${doc.name}">
       <div class="doc-icon" style="background: ${iconColor}20; color: ${iconColor}">${icon}</div>
       <div class="doc-info">
-        <div class="doc-name" title="${doc.name}">
+        <div class="doc-name">
           ${doc.name}
         </div>
         <div class="doc-meta">
           ${visibilityBadge}
           <span class="doc-cat-tag">
-            ${catIcon} ${category.replace(/.*\s/, '')}
+            ${catIcon} ${category}
           </span>
-          ${day ? `<span class="doc-cat-tag">📅 D${day}</span>` : ''}
+          ${day ? `<span class="doc-cat-tag">📅 D${day}</span>` : ""}
           <span style="opacity: 0.7">${new Date(doc.createdAt).toLocaleDateString()}</span>
         </div>
       </div>
