@@ -4921,7 +4921,20 @@ function renderGallery() {
 
   if (!photos.length) {
     statsEl.style.display = "none";
-    container.innerHTML = `<div class="gallery-empty"><div class="gallery-empty-icon">📷</div><p>La galería está vacía</p><small>Toca + para agregar las primeras fotos del viaje</small></div>`;
+    container.innerHTML = `
+      <div class="gallery-empty">
+        <div class="gallery-empty-card">
+          <div class="gallery-empty-icon">
+            <i class="ph-bold ph-aperture"></i>
+          </div>
+          <h3>Tu diario visual está listo</h3>
+          <p>Aún no tienes fotos en este viaje. Captura momentos y guarda tus recuerdos aquí.</p>
+          <button class="gallery-empty-btn" onclick="openAddPhoto()">
+            <i class="ph-bold ph-plus"></i> Agregar primera foto
+          </button>
+        </div>
+      </div>
+    `;
     return;
   }
 
@@ -4932,86 +4945,59 @@ function renderGallery() {
   document.getElementById("gallery-photo-count").textContent = photos.length;
   document.getElementById("gallery-day-count").textContent = daysWithPhotos;
 
-  // Group by date
-  const grouped = {};
-  const noDayKey = "__noday__";
-  photos.forEach((p) => {
-    const key = p.date || noDayKey;
-    if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(p);
-  });
-
   const allDays = getDaysBetween(currentTrip.startDate, currentTrip.endDate);
   const months = [
-    "Ene",
-    "Feb",
-    "Mar",
-    "Abr",
-    "May",
-    "Jun",
-    "Jul",
-    "Ago",
-    "Sep",
-    "Oct",
-    "Nov",
-    "Dic",
+    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic",
   ];
-  const weekDays = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
 
-  // Sort groups: dated days in order, then undated
-  const sortedKeys = Object.keys(grouped).sort((a, b) => {
-    if (a === noDayKey) return 1;
-    if (b === noDayKey) return -1;
-    return a.localeCompare(b);
-  });
-
-  container.innerHTML = sortedKeys
-    .map((key) => {
-      const dayPhotos = grouped[key];
-      let label = "Sin fecha";
-      let dayNum = "";
-      if (key !== noDayKey) {
-        const idx = allDays.indexOf(key);
-        const d = new Date(key + "T12:00:00");
-        label = `${weekDays[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
-        dayNum = idx >= 0 ? `Día ${idx + 1} · ` : "";
+  container.innerHTML = `<div class="gallery-grid">
+    ${photos.map((p, i) => {
+      let dayNum = "Sin fecha";
+      let dateLabel = "";
+      if (p.date) {
+        const idx = allDays.indexOf(p.date);
+        const d = new Date(p.date + "T12:00:00");
+        dayNum = idx >= 0 ? `DÍA ${idx + 1}` : "Día Extra";
+        dateLabel = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
       }
+      
+      const location = p.location || "";
+      const country = p.country || "";
+      const locStr = [location, country].filter(Boolean).join(", ");
 
-      const thumbsHtml = dayPhotos
-        .map((p, i) => {
-          const groupIdx = photos.indexOf(p);
-          return `<div class="gallery-thumb" onclick="openGalleryLightbox(${groupIdx})">
-            <img src="${p.url}" alt="${p.caption || ""}" loading="lazy">
-            <div class="thumb-overlay"></div>
-            ${p.caption ? `<div class="thumb-caption">${p.caption}</div>` : ""}
-            <button class="thumb-del" onclick="event.stopPropagation();deleteGalleryPhoto('${p.id}')" title="Eliminar">✕</button>
-          </div>`;
-        })
-        .join("");
-
-      return `<div class="gallery-day-group">
-          <div class="gallery-day-label">
-            <span class="gdl-badge">${dayNum}${label}</span>
-            <div class="gdl-line"></div>
-            <span class="gdl-count">${dayPhotos.length} foto${dayPhotos.length !== 1 ? "s" : ""}</span>
-          </div>
-          <div class="gallery-grid">
-            ${thumbsHtml}
-          </div>
-        </div>`;
-    })
-    .join("");
+      return `<div class="gallery-card" onclick="openGalleryLightbox(${i})">
+        <div class="gallery-card-img">
+          <img src="${p.url}" alt="${p.caption || ""}" loading="lazy">
+        </div>
+        <div class="gallery-card-content">
+          <div class="gallery-card-day">${dayNum}</div>
+          <div class="gallery-card-date">${dateLabel}</div>
+          ${locStr ? `<div class="gallery-card-location"><i class="ph-bold ph-map-pin"></i> ${locStr}</div>` : ""}
+          <div class="gallery-card-desc">${p.caption || "Sin descripción"}</div>
+        </div>
+        <div class="gallery-card-actions">
+          <button class="gallery-card-btn del" onclick="event.stopPropagation();deleteGalleryPhoto('${p.id}')">✕</button>
+        </div>
+      </div>`;
+    }).join("")}
+  </div>`;
 }
 
 function openAddPhoto(preselectedDay) {
   galleryPhotoFile = null;
   gallerySelectedDay = preselectedDay || null;
   document.getElementById("gallery-caption").value = "";
+  document.getElementById("gallery-location").value = "";
+  document.getElementById("gallery-country").value = "";
   document.getElementById("gallery-photo-input").value = "";
   document.getElementById("gallery-photo-filename").textContent =
-    "Seleccionar foto...";
+    "Ningún archivo seleccionado";
   document.getElementById("gallery-preview-wrap").innerHTML =
-    '<span style="font-size:2rem">🖼️</span>';
+    `<div style="text-align: center;">
+      <i class="ph-bold ph-image" style="font-size: 2.5rem; color: var(--text3); display: block; margin: 0 auto 8px;"></i>
+      <span style="color: var(--text3); font-size: 0.9rem;">Vista previa</span>
+    </div>`;
   document.getElementById("gallery-upload-status").style.display = "none";
   document.getElementById("gallery-save-btn").disabled = false;
 
@@ -5041,9 +5027,13 @@ function openAddPhoto(preselectedDay) {
       .map((dateStr, idx) => {
         const d = new Date(dateStr + "T12:00:00");
         const isSelected = preselectedDay === dateStr;
-        return `<div class="gallery-date-btn${isSelected ? " selected" : ""}" id="gdayb-${dateStr}" onclick="selectGalleryDay('${dateStr}')" data-date="${dateStr}">
-            <div style="font-weight:700;font-size:0.85rem">Día ${idx + 1}</div>
-            <div style="font-size:0.7rem;color:var(--text3)">${weekDays[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}</div>
+        const dayLabel = `${weekDays[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+        return `<div class="gallery-date-btn${isSelected ? " selected" : ""}" 
+                     id="gdayb-${dateStr}" 
+                     onclick="selectGalleryDay('${dateStr}')" 
+                     data-date="${dateStr}">
+            <span class="gdb-day">Día ${idx + 1}</span>
+            <span class="gdb-date">${dayLabel}</span>
           </div>`;
       })
       .join("");
@@ -5066,7 +5056,7 @@ function onGalleryPhotoSelected(input) {
   const file = input.files[0];
   if (!file) return;
   galleryPhotoFile = file;
-  document.getElementById("gallery-photo-filename").textContent = file.name;
+  document.getElementById("gallery-photo-filename").textContent = file.name.toUpperCase();
   const reader = new FileReader();
   reader.onload = (e) => {
     document.getElementById("gallery-preview-wrap").innerHTML =
@@ -5113,6 +5103,8 @@ async function saveGalleryPhoto() {
       url: data.data.url,
       thumbUrl: data.data.thumb?.url || data.data.url,
       caption,
+      location: document.getElementById("gallery-location").value.trim(),
+      country: document.getElementById("gallery-country").value.trim(),
       date: gallerySelectedDay || null,
       authorId: currentUser.uid,
       authorName: currentUser.displayName || currentUser.email,
@@ -5871,11 +5863,23 @@ function subscribeDocuments() {
 window.docFilterText = "";
 
 function filterDocuments(text) {
-  window.docFilterText = text ? text.toLowerCase() : "";
+  window.docFilterText = text ? text.toLowerCase().trim() : "";
+  const clearBtn = document.getElementById("doc-clear-btn");
+  if (clearBtn) clearBtn.style.display = window.docFilterText ? "block" : "none";
+  
   if (window._tripDocs) {
     renderDocuments(window._tripDocs);
   }
 }
+
+function clearDocSearch() {
+  const input = document.getElementById("doc-search-input");
+  if (input) {
+    input.value = "";
+    filterDocuments("");
+  }
+}
+window.clearDocSearch = clearDocSearch;
 
 function selectDocType(type) {
   window.currentDocType = type;
@@ -5974,23 +5978,27 @@ function renderDocumentItem(doc) {
   else if (category.includes("Comprobante") || category.includes("Factura")) catIcon = "🧾";
   else if (category.includes("Identidad")) catIcon = "🛂";
 
+  const visibilityBadge = isPersonal 
+    ? '<span class="visibility-tag personal">🔒 Personal</span>' 
+    : '<span class="visibility-tag shared">👥 Compartido</span>';
+
   return `
     <div class="doc-card" onclick="window.open('${doc.url}', '_blank')">
       <div class="doc-icon" style="background: ${iconColor}20; color: ${iconColor}">${icon}</div>
       <div class="doc-info">
-        <div class="doc-name">
-          ${isPersonal ? '<span class="doc-personal-lock">🔒</span>' : ''}
+        <div class="doc-name" title="${doc.name}">
           ${doc.name}
         </div>
         <div class="doc-meta">
+          ${visibilityBadge}
           <span class="doc-cat-tag">
             ${catIcon} ${category.replace(/.*\s/, '')}
           </span>
-          ${day ? `<span class="doc-cat-tag">📅 ${getDayLabel(day)}</span>` : ''}
-          <span>${new Date(doc.createdAt).toLocaleDateString()}</span>
+          ${day ? `<span class="doc-cat-tag">📅 D${day}</span>` : ''}
+          <span style="opacity: 0.7">${new Date(doc.createdAt).toLocaleDateString()}</span>
         </div>
       </div>
-      <button class="doc-delete-btn" onclick="event.stopPropagation(); deleteDocument('${doc.id}')">
+      <button class="doc-delete-btn" onclick="event.stopPropagation(); deleteDocument('${doc.id}')" title="Eliminar">
         <i class="ph ph-trash"></i>
       </button>
     </div>

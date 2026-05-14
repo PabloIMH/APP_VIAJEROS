@@ -34,6 +34,9 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
+  overflow: hidden; /* Added to prevent child overflow */
+  max-width: 100%;  /* Ensure it doesn't exceed parent */
+  box-sizing: border-box;
 }
 
 .doc-card:hover {
@@ -66,12 +69,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
   margin-bottom: 2px;
+  display: block; /* Ensure block for ellipsis */
+  width: 100%;    /* Force width for ellipsis */
 }
 
-.doc-meta {
-  font-size: 0.75rem;
-  color: var(--text3);
-}
 
 .doc-delete-btn {
   width: 32px;
@@ -85,11 +86,34 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0; /* Prevent button from shrinking */
 }
 
 .doc-delete-btn:hover {
   background: var(--accent-red-dim);
   color: var(--accent-red);
+}
+
+/* Visibility Badges */
+.visibility-tag {
+  font-size: 0.65rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.visibility-tag.personal {
+  background: rgba(255, 107, 107, 0.1);
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 107, 107, 0.2);
+}
+
+.visibility-tag.shared {
+  background: rgba(124, 239, 176, 0.1);
+  color: var(--accent3);
+  border: 1px solid rgba(124, 239, 176, 0.2);
 }
 
 /* Empty State */
@@ -153,6 +177,7 @@
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 4px;
+  min-width: 0; /* Allow meta row to shrink */
 }
 
 .doc-cat-tag {
@@ -175,6 +200,6 @@
 
 @media (max-width: 600px) {
   .doc-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr); /* More robust than just 1fr */
   }
 }

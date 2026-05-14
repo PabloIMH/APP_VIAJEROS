@@ -704,10 +704,12 @@
                   <div style="flex: 1; position: relative;">
                     <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 1rem;">🔍</span>
                     <input type="text" id="doc-search-input" placeholder="Filtrar documentos..." 
-                      style="width: 100%; padding: 10px 10px 10px 36px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface2); color: var(--text); font-size: 0.88rem; transition: all 0.2s; outline: none;" 
+                      style="width: 100%; padding: 10px 36px 10px 36px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface2); color: var(--text); font-size: 0.88rem; transition: all 0.2s; outline: none;" 
                       onfocus="this.style.borderColor='var(--accent)'; this.style.background='var(--surface3)'" 
                       onblur="this.style.borderColor='var(--border)'; this.style.background='var(--surface2)'" 
                       oninput="filterDocuments(this.value)">
+                    <button id="doc-clear-btn" onclick="clearDocSearch()" 
+                      style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); display: none; background: none; border: none; cursor: pointer; color: var(--text3); font-size: 1.1rem; padding: 4px; line-height: 1;">✕</button>
                   </div>
                 </div>
 
@@ -1929,37 +1931,69 @@
   <div class="modal-overlay" id="add-photo-modal">
     <div class="modal">
       <div class="modal-handle"></div>
-      <h2 class="modal-title">Agregar foto 📸</h2>
+      
+      <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(232, 201, 122, 0.15); display: flex; align-items: center; justify-content: center; color: var(--accent);">
+          <i class="ph-bold ph-camera" style="font-size: 1.4rem;"></i>
+        </div>
+        <div>
+          <h2 class="modal-title" style="margin: 0;">Agregar foto</h2>
+          <p style="margin: 0; font-size: 0.75rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px;">Captura un recuerdo de tu ruta</p>
+        </div>
+      </div>
 
       <div class="form-group">
-        <label>Foto</label>
-        <div id="gallery-preview-wrap" class="gallery-preview-wrap">
-          <span style="font-size: 2rem">🖼️</span>
+        <label>FOTO</label>
+        <div id="gallery-preview-wrap" class="gallery-preview-wrap" onclick="document.getElementById('gallery-photo-input').click()">
+          <div style="text-align: center;">
+            <i class="ph-bold ph-image" style="font-size: 2.5rem; color: var(--text3); display: block; margin: 0 auto 8px;"></i>
+            <span style="color: var(--text3); font-size: 0.9rem;">Vista previa</span>
+          </div>
         </div>
         <input type="file" id="gallery-photo-input" accept="image/*" style="display: none"
           onchange="onGalleryPhotoSelected(this)" />
-        <label for="gallery-photo-input" class="file-upload-btn" id="gallery-photo-label">
-          <span class="file-icon">📸</span>
-          <span id="gallery-photo-filename">Seleccionar foto...</span>
-        </label>
+        <button class="btn btn-ghost" style="width: 100%; border: 1px solid var(--border); background: var(--surface2); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;" onclick="document.getElementById('gallery-photo-input').click()">
+          <i class="ph-bold ph-suitcase-simple" style="margin-right: 8px;"></i>
+          <span id="gallery-photo-filename">Ningún archivo seleccionado</span>
+        </button>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>LUGAR (OPCIONAL)</label>
+          <div style="position: relative;">
+            <i class="ph-bold ph-map-pin" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3);"></i>
+            <input type="text" id="gallery-location" placeholder="Lugar..." style="padding-left: 36px;" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>PAÍS (OPCIONAL)</label>
+          <div style="position: relative;">
+            <i class="ph-bold ph-flag" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text3);"></i>
+            <input type="text" id="gallery-country" placeholder="País..." style="padding-left: 36px;" />
+          </div>
+        </div>
       </div>
 
       <div class="form-group">
-        <label>Pie de foto (opcional)</label>
-        <input type="text" id="gallery-caption" placeholder="Atardecer increíble, La mejor cena del viaje..." />
+        <label>DESCRIPCIÓN (OPCIONAL)</label>
+        <div style="position: relative;">
+          <i class="ph-bold ph-chat-centered-text" style="position: absolute; left: 12px; top: 12px; color: var(--text3);"></i>
+          <textarea id="gallery-caption" placeholder="Describe este momento..." style="padding-left: 36px; height: 80px; resize: none;"></textarea>
+        </div>
       </div>
 
       <div class="form-group" id="gallery-day-group">
-        <label>Día del viaje</label>
+        <label>DÍA DEL VIAJE</label>
         <div class="gallery-date-grid" id="gallery-date-grid"></div>
       </div>
 
-      <div style="display: flex; gap: 10px; margin-top: 8px">
+      <div style="display: flex; gap: 10px; margin-top: 12px">
         <button class="btn btn-ghost" style="flex: 1" onclick="closeModal('add-photo-modal')">
           Cancelar
         </button>
         <button class="btn btn-primary" style="flex: 1" id="gallery-save-btn" onclick="saveGalleryPhoto()">
-          Subir foto
+          Subir recuerdo
         </button>
       </div>
       <div id="gallery-upload-status" style="
