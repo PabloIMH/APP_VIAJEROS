@@ -611,15 +611,18 @@ window.toggleTheme = toggleTheme;
 window.doLoginWithGoogle = doLoginWithGoogle;
 
 // ─── TRIPS ───
-async function loadTrips() {
+let unsubscribeTrips = null;
+function loadTrips() {
   const q = query(
     collection(db, "trips"),
     where("memberIds", "array-contains", currentUser.uid),
   );
-  const snap = await getDocs(q);
-  const trips = [];
-  snap.forEach((d) => trips.push({ id: d.id, ...d.data() }));
-  renderTrips(trips);
+  if (unsubscribeTrips) unsubscribeTrips();
+  unsubscribeTrips = onSnapshot(q, (snap) => {
+    const trips = [];
+    snap.forEach((d) => trips.push({ id: d.id, ...d.data() }));
+    renderTrips(trips);
+  });
 }
 
 // ─── COVER PHOTOS ───
