@@ -54,6 +54,8 @@ let unsubscribeTrip = null;
 
 let unsubscribeGlobalNotifs = null;
 let editingExpenseId = null;
+let editingDocId = null;
+let isSavingExpense = false;
 
 
 // Itinerary state
@@ -171,8 +173,11 @@ window.openGalleryLightbox = openGalleryLightbox;
 window.galleryLbNav = galleryLbNav;
 window.closeGalleryLightbox = closeGalleryLightbox;
 window.openAddDocument = openAddDocument;
+window.editDocument = editDocument;
 window.saveDocument = saveDocument;
 window.deleteDocument = deleteDocument;
+window.toggleDocKebab = toggleDocKebab;
+window.closeDocKebab = closeDocKebab;
 window.openGoogleMaps = openGoogleMaps;
 
 window.toggleUserMenu = toggleUserMenu;
@@ -2069,6 +2074,7 @@ function openAddExpense(forceType) {
   }
 
   editingExpenseId = null;
+  isSavingExpense = false;
   document.getElementById("expense-modal-title").innerHTML =
     expType === "shared"
       ? "💸 Agregar Gasto Compartido"
@@ -2237,6 +2243,22 @@ function selectExpenseType(type) {
 }
 
 async function saveExpense() {
+  // Guard against double-submission (e.g. double tap on mobile)
+  if (isSavingExpense) return;
+  isSavingExpense = true;
+
+  const saveBtn = document.querySelector("#add-expense-modal .btn-primary");
+  if (saveBtn) saveBtn.disabled = true;
+
+  try {
+    await _doSaveExpense();
+  } finally {
+    isSavingExpense = false;
+    if (saveBtn) saveBtn.disabled = false;
+  }
+}
+
+async function _doSaveExpense() {
   const desc = document.getElementById("exp-desc").value.trim();
   const baseAmount = parseFloat(document.getElementById("exp-amount").value);
   const date = document.getElementById("exp-date").value;
@@ -3963,6 +3985,7 @@ function renderItinerary(resetPagination) {
             
             <div style="display:flex; gap:8px; margin-top:12px;">
                 <button class="itin-add-event-btn" style="flex:1" onclick="openAddItinEvent('${dateStr}')">+ Agregar actividad</button>
+                ${window._copiedItinEvent ? `<button class="itin-add-event-btn" style="background:rgba(124,239,176,0.15);color:var(--accent3);border:1px solid rgba(124,239,176,0.3);padding:0 12px" onclick="pasteItinEvent('${dateStr}')" title="Pegar actividad copiada">📋 Pegar</button>` : ""}
                 <button class="btn-maps-export" onclick="window.open(getGoogleMapsDayLink(getDayRouteData('${dateStr}')), '_blank')">🗺️ Ruta en Maps</button>
             </div>
           </div>
@@ -4152,6 +4175,7 @@ function renderItinEventCard(ev, query) {
           <button class="itin-action-btn" onclick="toggleItinKebab('${ev.id}', event)">⋮</button>
           <div id="itin-kebab-${ev.id}" style="display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;min-width:140px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,0.7)">
             <div onclick="openEditItinEvent('${ev.id}','${ev.date}');closeItinKebab('${ev.id}')" style="padding:12px 16px;cursor:pointer;font-size:0.88rem;color:var(--text2)">✏️ Editar</div>
+            <div onclick="copyItinEvent('${ev.id}');closeItinKebab('${ev.id}')" style="padding:12px 16px;cursor:pointer;font-size:0.88rem;color:var(--text2)">📋 Copiar</div>
             <div onclick="deleteItinEvent('${ev.id}');closeItinKebab('${ev.id}')" style="padding:12px 16px;cursor:pointer;font-size:0.88rem;color:var(--danger)">🗑️ Eliminar</div>
           </div>
         </div>
@@ -4516,6 +4540,7 @@ function renderItineraryFromStart() {
             
             <div style="display:flex; gap:8px; margin-top:12px;">
                 <button class="itin-add-event-btn" style="flex:1" onclick="openAddItinEvent('${dateStr}')">+ Agregar actividad</button>
+                ${window._copiedItinEvent ? `<button class="itin-add-event-btn" style="background:rgba(124,239,176,0.15);color:var(--accent3);border:1px solid rgba(124,239,176,0.3);padding:0 12px" onclick="pasteItinEvent('${dateStr}')" title="Pegar actividad copiada">📋 Pegar</button>` : ""}
                 <button class="btn-maps-export" onclick="window.open(getGoogleMapsDayLink(getDayRouteData('${dateStr}')), '_blank')">🗺️ Ruta en Maps</button>
             </div>
           </div>
@@ -4863,6 +4888,40 @@ async function deleteItinEvent(eventId) {
   await deleteDoc(doc(db, "trips", currentTripId, "itinerary", eventId));
   toast("Actividad eliminada");
 }
+
+window.copyItinEvent = function(eventId) {
+  const ev = (window._itinEvents || []).find(e => e.id === eventId);
+  if (!ev) return;
+  // Crear copia profunda y quitar ID
+  const copy = { ...ev };
+  delete copy.id;
+  window._copiedItinEvent = copy;
+  toast("Actividad copiada 📋");
+  if (window._itinShowFromStart) renderItineraryFromStart(); else renderItinerary();
+};
+
+window.pasteItinEvent = async function(dateStr) {
+  if (!window._copiedItinEvent) return;
+  
+  const eventData = {
+    ...window._copiedItinEvent,
+    date: dateStr,
+    createdAt: serverTimestamp(),
+    authorId: currentUser.uid,
+    authorName: currentUser.displayName || currentUser.email
+  };
+  
+  try {
+    await addDoc(collection(db, "trips", currentTripId, "itinerary"), eventData);
+    toast("Actividad pegada ✓");
+    // Limpiar el portapapeles después de pegar
+    window._copiedItinEvent = null;
+    if (window._itinShowFromStart) renderItineraryFromStart(); else renderItinerary();
+  } catch (e) {
+    console.error(e);
+    toast("Error al pegar actividad", "error");
+  }
+};
 
 // ─── GOOGLE MAPS INTEGRATION ───
 function openGoogleMaps(mapsUrl) {
@@ -5890,7 +5949,7 @@ window.selectDocType = selectDocType;
 window.filterDocuments = filterDocuments;
 
 function getDayLabel(dayNum) {
-  if (!dayNum || dayNum === "Sin asignar") return "Sin asignar";
+  if (!dayNum || dayNum === "Sin asignar" || dayNum === "General") return "General / Seguros";
   if (!currentTrip || !currentTrip.startDate) return `Día ${dayNum}`;
   const allDays = getDaysBetween(currentTrip.startDate, currentTrip.endDate);
   const dateStr = allDays[dayNum - 1];
@@ -5940,13 +5999,17 @@ function renderDocuments(docs = []) {
 
   let html = "";
   Object.keys(grouped).sort((a, b) => {
-      if (a === "Sin asignar") return 1;
-      if (b === "Sin asignar") return -1;
-      return parseInt(a) - parseInt(b);
+    if (a === "Sin asignar") return -1;
+    if (b === "Sin asignar") return 1;
+    return parseInt(a) - parseInt(b);
   }).forEach(day => {
+    const isGeneral = day === "Sin asignar";
     html += `
-      <div class="doc-day-group">
-        <h3 class="doc-day-title">${getDayLabel(day)}</h3>
+      <div class="doc-day-group ${isGeneral ? 'general-docs' : ''}">
+        <h3 class="doc-day-title">
+          <span class="doc-day-icon">${isGeneral ? "📁" : "📅"}</span>
+          ${getDayLabel(day)}
+        </h3>
         <div class="doc-grid">
           ${grouped[day].map(d => renderDocumentItem(d)).join("")}
         </div>
@@ -5998,14 +6061,63 @@ function renderDocumentItem(doc) {
           <span style="opacity: 0.7">${new Date(doc.createdAt).toLocaleDateString()}</span>
         </div>
       </div>
-      <button class="doc-delete-btn" onclick="event.stopPropagation(); deleteDocument('${doc.id}')" title="Eliminar">
-        <i class="ph ph-trash"></i>
-      </button>
+      <div class="doc-kebab-wrap">
+        <button class="doc-kebab-btn" onclick="toggleDocKebab('${doc.id}', event)">
+          <i class="ph ph-dots-three-vertical"></i>
+        </button>
+        <div class="doc-kebab-menu" id="doc-kebab-${doc.id}" onclick="event.stopPropagation()">
+          <button class="doc-kebab-item" onclick="event.stopPropagation(); editDocument('${doc.id}')">
+            <i class="ph-fill ph-pencil"></i> Editar
+          </button>
+          <button class="doc-kebab-item danger" onclick="event.stopPropagation(); deleteDocument('${doc.id}')">
+            <i class="ph-fill ph-trash"></i> Eliminar
+          </button>
+        </div>
+      </div>
     </div>
   `;
 }
 
+function toggleDocKebab(id, event) {
+  event.stopPropagation();
+  const menu = document.getElementById("doc-kebab-" + id);
+  const card = menu.closest(".doc-card");
+  const isOpen = menu.classList.contains("show");
+  
+  // Close all other doc kebabs and reset their z-indexes
+  document.querySelectorAll(".doc-kebab-menu").forEach(m => {
+    m.classList.remove("show");
+    const parentCard = m.closest(".doc-card");
+    if (parentCard) parentCard.style.zIndex = "";
+  });
+  
+  if (!isOpen) {
+    menu.classList.add("show");
+    if (card) card.style.zIndex = "1001";
+  }
+}
+
+function closeDocKebab(id) {
+  const menu = document.getElementById("doc-kebab-" + id);
+  if (menu) {
+    menu.classList.remove("show");
+    const card = menu.closest(".doc-card");
+    if (card) card.style.zIndex = "";
+  }
+}
+
+// Close kebabs on click outside
+document.addEventListener("click", () => {
+  document.querySelectorAll(".doc-kebab-menu").forEach(m => {
+    m.classList.remove("show");
+    const card = m.closest(".doc-card");
+    if (card) card.style.zIndex = "";
+  });
+});
+
 function openAddDocument() {
+  editingDocId = null;
+  document.getElementById("doc-modal-title").textContent = "Subir Documento 📄";
   document.getElementById("doc-name-input").value = "";
   
   // Reset visibility and category
@@ -6019,7 +6131,7 @@ function openAddDocument() {
 
   // Llenar selector de días de forma robusta
   const daySelect = document.getElementById("doc-day-select");
-  daySelect.innerHTML = '<option value="">Sin asignar</option>';
+  daySelect.innerHTML = '<option value="">General / Seguros</option>';
   
   if (currentTrip && currentTrip.startDate && currentTrip.endDate) {
     const allDays = getDaysBetween(currentTrip.startDate, currentTrip.endDate);
@@ -6035,6 +6147,41 @@ function openAddDocument() {
   openModal("add-document-modal");
 }
 
+async function editDocument(docId) {
+  const d = (window._tripDocs || []).find(x => x.id === docId);
+  if (!d) return;
+
+  editingDocId = docId;
+  document.getElementById("doc-modal-title").textContent = "Editar Documento 📄";
+  document.getElementById("doc-name-input").value = d.name;
+  
+  selectDocType(d.visibility || "shared");
+  const catSelect = document.getElementById("doc-cat-select");
+  if (catSelect) catSelect.value = d.category || "Otro";
+
+  // Pre-fill days select
+  const daySelect = document.getElementById("doc-day-select");
+  daySelect.innerHTML = '<option value="">General / Seguros</option>';
+  if (currentTrip && currentTrip.startDate) {
+    const allDays = getDaysBetween(currentTrip.startDate, currentTrip.endDate);
+    allDays.forEach((date, index) => {
+      const dayNum = index + 1;
+      const opt = document.createElement("option");
+      opt.value = dayNum;
+      opt.textContent = getDayLabel(dayNum);
+      daySelect.appendChild(opt);
+    });
+  }
+  daySelect.value = d.day || "";
+
+  // Set Uploadcare widget value
+  const widget = uploadcare.Widget("#doc-file-url");
+  if (widget) widget.value(d.url);
+
+  openModal("add-document-modal");
+  closeDocKebab(docId);
+}
+
 async function saveDocument() {
   const name = document.getElementById("doc-name-input").value.trim();
   const url = document.getElementById("doc-file-url").value;
@@ -6048,21 +6195,29 @@ async function saveDocument() {
     return;
   }
 
-  showLoading("Guardando documento...");
+  showLoading(editingDocId ? "Actualizando documento..." : "Guardando documento...");
   try {
-    await addDoc(collection(db, "trips", currentTripId, "documents"), {
+    const docData = {
       name,
       url,
       day,
       category,
       visibility,
-      createdAt: Date.now(),
-      createdBy: currentUser.uid
-    });
+      updatedAt: Date.now()
+    };
+
+    if (editingDocId) {
+      await updateDoc(doc(db, "trips", currentTripId, "documents", editingDocId), docData);
+      toast("Documento actualizado ✓");
+    } else {
+      docData.createdAt = Date.now();
+      docData.createdBy = currentUser.uid;
+      await addDoc(collection(db, "trips", currentTripId, "documents"), docData);
+      toast("Documento guardado ✅");
+    }
     closeModal("add-document-modal");
-    toast("Documento guardado");
   } catch (e) {
-    handleError(e, "guardar documento");
+    handleError(e, editingDocId ? "actualizar documento" : "guardar documento");
   } finally {
     hideLoading();
   }

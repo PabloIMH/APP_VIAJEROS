@@ -54,7 +54,8 @@ self.addEventListener('fetch', (event) => {
             event.request.url.includes('.png') ||
             event.request.url.includes('fonts.googleapis.com') ||
             event.request.url.includes('unpkg.com') ||
-            event.request.url.includes('cdnjs.cloudflare.com')
+            event.request.url.includes('cdnjs.cloudflare.com') ||
+            event.request.url.includes('ucarecdn.com')
         )) {
           const cacheCopy = response.clone();
           caches.open(CACHE_NAME).then((cache) => {

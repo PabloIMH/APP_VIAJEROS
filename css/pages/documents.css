@@ -9,12 +9,34 @@
 
 .doc-day-title {
   font-family: var(--font-fancy);
-  font-size: 1.1rem;
-  color: var(--text2);
-  margin-bottom: 12px;
+  font-size: 1.15rem;
+  color: var(--text);
+  margin-bottom: 16px;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.doc-day-icon {
+  font-size: 1.2rem;
+  background: var(--surface3);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+
+.general-docs .doc-day-title {
+  color: var(--accent);
+}
+
+.general-docs .doc-day-icon {
+  background: rgba(232, 201, 122, 0.15);
+  color: var(--accent);
 }
 
 .doc-grid {
@@ -34,7 +56,6 @@
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
-  overflow: hidden; /* Added to prevent child overflow */
   max-width: 100%;  /* Ensure it doesn't exceed parent */
   box-sizing: border-box;
 }
@@ -80,7 +101,12 @@
 }
 
 
-.doc-delete-btn {
+.doc-kebab-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.doc-kebab-btn {
   width: 32px;
   height: 32px;
   border-radius: 8px;
@@ -92,12 +118,71 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
-  flex-shrink: 0; /* Prevent button from shrinking */
 }
 
-.doc-delete-btn:hover {
-  background: var(--accent-red-dim);
+.doc-kebab-btn:hover {
+  background: var(--surface3);
+  color: var(--text);
+}
+
+.doc-kebab-menu {
+  position: absolute;
+  top: 36px;
+  right: 0;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-width: 120px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  display: none;
+  flex-direction: column;
+  z-index: 1000;
+  overflow: hidden;
+  margin-top: 6px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.doc-kebab-menu.show {
+  display: flex;
+}
+
+.doc-kebab-item {
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  color: var(--text2);
+  font-size: 0.88rem;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.doc-kebab-item i {
+  font-size: 1.1rem;
+}
+
+.doc-kebab-item:first-child i {
+  color: var(--accent);
+}
+
+.doc-kebab-item.danger i {
+  color: var(--danger);
+}
+
+.doc-kebab-item:hover {
+  background: var(--surface3);
+  color: var(--text);
+}
+
+.doc-kebab-item.danger {
   color: var(--accent-red);
+}
+
+.doc-kebab-item.danger:hover {
+  background: var(--accent-red-dim);
 }
 
 /* Visibility Badges */
